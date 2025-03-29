@@ -1,131 +1,271 @@
 /* Yleiset tyylit */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f3;
-    color: #222;
-    line-height: 1.6;
-  }
-  
-  /* Hero-osio */
-  .hero {
-    background-image: url('hero.jpg'); /* Vaihda omaan taustakuvaan */
-    background-size: cover;
-    background-position: center;
-    text-align: center;
-    padding: 100px 20px;
-    color: rgb(128, 93, 69);
-  }
-  
-  .hero h1 {
-    font-size: 3rem;
-    margin-bottom: 10px;
-  }
-  
-  .hero p {
-    font-size: 1.2rem;
-  }
-  
-  /* Tietoa minusta -osio */
-  .about {
-    padding: 60px 20px;
-  }
-  
-  .about-content {
-    max-width: 1000px;
-    margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 40px;
-  }
-  
-  .profile-img {
-    width: 300px;
-    border-radius: 12px;
-  }
-  
-  .about-text {
-    flex: 1;
-  }
-  
-  .about-text h2 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-  }
-  
-  /* Projektit-osio */
-  .projects {
-    background-color: #fff;
-    padding: 60px 20px;
-    text-align: center;
-  }
-  
-  .projects h2 {
-    font-size: 2rem;
-    margin-bottom: 40px;
-  }
-  
-  .project-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-  }
-  
-  .project-card {
-    background-color: #fdfdfd;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease;
-    width: 300px;
-    cursor: pointer;
-  }
-  
-  .project-card:hover {
-    transform: scale(1.05);
-  }
-  
-  .project-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-  
-  .project-card h3 {
-    padding: 15px;
-  }
-  
-  /* Footer */
-  .footer {
-    background-color: #222;
-    color: #f5f5f5;
-    text-align: center;
-    padding: 20px;
-    font-size: 0.9rem;
-  }
-  
-  .footer a {
-    color: #ddd;
-    text-decoration: none;
-  }
-  
-  .footer a:hover {
-    text-decoration: underline;
-  }
-/* Todo list osio */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  .todo-app {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f3;
+  color: #222;
+  line-height: 1.6;
+}
+
+/* Hero-osio */
+.hero {
+  background-image: url('hero.jpg');
+  background-size: cover;
+  background-position: center;
+  text-align: center;
+  padding: 100px 20px;
+  color: rgb(128, 93, 69);
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 1.2rem;
+}
+
+/* Tietoa minusta -osio */
+.about {
+  padding: 60px 20px;
+}
+
+.about-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 40px;
+}
+
+.profile-img {
+  width: 300px;
+  border-radius: 12px;
+}
+
+.about-text {
+  flex: 1;
+}
+
+.about-text h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* Projektit-osio */
+.projects {
+  background-color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.projects h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+}
+
+.project-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.project-card {
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  width: 300px;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  transform: scale(1.05);
+}
+
+.project-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.project-card h3 {
+  padding: 15px;
+}
+
+/* Footer */
+.footer {
+  background-color: #222;
+  color: #f5f5f5;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: #ddd;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* TODO-LISTA */
+
+.todo-app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.task-input {
+  display: flex;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto 20px auto;
+  padding: 10px;
+  background-color: #fdfdfd;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Input-field */
+.task-field {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.task-field:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+
+.add-task-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.add-task-btn:hover {
+  background-color: #0056b3;
+}
+
+.add-task-btn:active {
+  transform: scale(0.97);
+}
+
+
+.task-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background-color: #fdfdfd;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  flex-wrap: nowrap; 
+}
+
+
+.task-text {
+  flex: 1;
+  font-size: 1rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  padding-right: 10px;
+}
+
+.task-text.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+
+.task-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+
+.delete-btn {
+  background-color: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #ff1a1a;
+}
+
+
+.edit-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+  background-color: #45a049;
+}
+
+/* Checkbox-tyyli */
+.complete-checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.back-button-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.back-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ddd;
+  color: #222;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #ccc;
+}
