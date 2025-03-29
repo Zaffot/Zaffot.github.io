@@ -32,7 +32,7 @@ attackBtn.addEventListener("click", () => {
                        (result.isCrit ? "\n💥 Kriittinen osuma!" : "");
 
     if (enemy.health <= 0) {
-        const xpGained = enemy.level * 10;
+        const xpGained = enemy.level * 15;
         player.gainXP(xpGained);
         player.health = player.maxHealth;
         logDiv.innerText += `\n💀 Vihollinen kaatui! Saat ${xpGained} XP:tä!`;
@@ -111,14 +111,13 @@ restartBtn.addEventListener("click", () => {
 });
 
 function updateStats() {
-    document.getElementById("player-health").textContent = `HP: ${player.health}`;
+    document.getElementById("player-health").textContent = `HP: ${player.health.toFixed(2)}`;
     document.getElementById("player-xp").textContent = `XP: ${player.xp} / ${player.nextLevelXP}`;
     document.getElementById("player-level").textContent = `Level: ${player.level}`;
 
-    document.getElementById("enemy-health").textContent = `HP: ${enemy.health}`;
+    document.getElementById("enemy-health").textContent = `HP: ${enemy.health.toFixed(2)}`;
     document.getElementById("enemy-name").textContent = `${enemy.name}`;
 
-    // Pystysuuntaiset health barit ylhäältä alas
     if (playerBar) playerBar.style.height = `${Math.max(0, (player.health / player.maxHealth) * 100)}%`;
     if (enemyBar) enemyBar.style.height = `${Math.max(0, (enemy.health / enemy.maxHealth) * 100)}%`;
 
@@ -129,6 +128,17 @@ function updateStats() {
             <p>Max HP: ${player.maxHealth}</p>
             <p>Attack: ${player.attackMin} - ${player.attackMax}</p>
             <p>Defence: ${player.defence}</p>
+        `;
+    }
+
+    const enemyStatsDiv = document.getElementById("enemy-debug");
+    if (enemyStatsDiv) {
+        const stats = enemy.getStats();
+        enemyStatsDiv.innerHTML = `
+            <h3>💀 Vihollisen statsit</h3>
+            <p>Max HP: ${stats.maxHp}</p>
+            <p>Attack: ${stats.attack}</p>
+            <p>Defence: ${stats.defence}</p>
         `;
     }
 }

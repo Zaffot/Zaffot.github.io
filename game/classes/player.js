@@ -1,83 +1,55 @@
-export class Player{
-    // Constructor for the Player class
-    // Initializes the player's name, health, defence, attack, level, xp, and isDefending properties
+// player.js
+export class Player {
     constructor(name) {
-        this.name = name;
-        this.level = 1;
-        this.health = 30;
-        this.maxHealth = 30; // uusi
-        this.attackMin = 1;
-        this.attackMax = 3;
-        this.defence = 0;
-        this.xp = 0;
-        this.nextLevelXP = 50;
-        this.isDefending = false;
-        this.maxHealth = 30;
-        this.health = this.maxHealth;
-        
+      this.name = name;
+      this.level = 1;
+      this.xp = 0;
+      this.nextLevelXP = 50;
+      this.maxHealth = 30;
+      this.health = this.maxHealth;
+      this.attackMin = 1;
+      this.attackMax = 3;
+      this.defence = 0;
+      this.isDefending = false;
     }
-
-
+  
     gainXP(amount) {
-        this.xp += amount;
-    
-        while (this.xp >= this.nextLevelXP && this.level < 100) {
-            this.xp -= this.nextLevelXP;
-            this.level++;
-            this.nextLevelXP *= 2;
-    
-            // Kasvatetaan max-terveyttä ja palautetaan täyteen
-            this.maxHealth += 5;
-            this.health = this.maxHealth;
-    
-            // Hyökkäys ja puolustus kehittyy
-            this.attackMin += 1;
-            this.attackMax += 2;
-            this.defence += 1;
-    
-            console.log(`🔼 Level up! Olet nyt tasolla ${this.level}`);
-        }
+      this.xp += amount;
+  
+      while (this.xp >= this.nextLevelXP && this.level < 100) {
+        this.xp -= this.nextLevelXP;
+        this.level++;
+        this.nextLevelXP = Math.floor(this.nextLevelXP * 1.6); // kasvaa nopeasti
+  
+        // Kasvata statseja sopivasti
+        this.maxHealth += 5;
+        this.attackMin += 1;
+        this.attackMax += 2;
+        this.defence += (this.level % 2 === 0 ? 1 : 0); // joka toinen level antaa def
+        this.health = this.maxHealth; // parane aina täyteen
+  
+        console.log(`Level up! Olet nyt tasolla ${this.level}`);
+      }
     }
-    
-    
+  
+    makeDamage(enemy) {
+      let damage = Math.floor(Math.random() * (this.attackMax - this.attackMin + 1)) + this.attackMin;
+      const isCrit = Math.random() < 0.1; // 10% kriittinen
+      if (isCrit) damage *= 2;
+  
+      const actualDamage = enemy.takeDamage(damage);
+      return { damage: actualDamage, isCrit };
+    }
+  
     takeDamage(amount) {
-        let defenseValue = this.defence;
-    
-        if (this.isDefending) {
-            // Esim. puolustustilassa saat +2 lisää suojaa
-            defenseValue += 2;
-        }
-    
-        let totalDamage = amount - defenseValue;
-    
-        // Ei saa ottaa negatiivista vahinkoa
-        totalDamage = Math.max(0, totalDamage);
-    
-        this.health -= totalDamage;
-        return totalDamage;
+      let totalDamage = amount - this.defence;
+      if (this.isDefending) totalDamage = Math.floor(totalDamage / 2);
+      totalDamage = Math.max(0, totalDamage);
+      this.health -= totalDamage;
+      return totalDamage;
     }
-    
-
+  
     resetDefence() {
-        this.isDefending = false;
+      this.isDefending = false;
     }
-
-    makeDamage(target) {
-        // Satunnainen arvo välillä min–max
-        let damage = Math.floor(Math.random() * (this.attackMax - this.attackMin + 1)) + this.attackMin;
-    
-        // 10% mahdollisuus kriittiseen osumaan
-        const isCrit = Math.random() < 0.1;
-    
-        if (isCrit) {
-            damage *= 2;
-            console.log("Kriittinen osuma!");
-        }
-    
-        const actualDamage = target.takeDamage(damage);
-        return {
-            damage: actualDamage,
-            isCrit: isCrit
-        };
-    }
-}
+  }

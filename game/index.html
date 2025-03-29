@@ -20,7 +20,7 @@
         <div id="debug"></div>
       </div>
 
-      <!-- Keskiosa: taistelu ja napit -->
+      <!-- Keskiosa: taistelu -->
       <div id="battle" class="panel">
         <!-- Pystypalkit -->
         <div class="vertical-bar left">
@@ -30,22 +30,25 @@
           <div id="enemy-health-bar" class="vertical-fill">Vihollinen</div>
         </div>
 
-        <!-- Loki ja kontrollit -->
+        <!-- Loki -->
         <div id="log"></div>
-        <div id="controls">
-          <button id="attack-btn">🗡️ Hyökkää</button>
-          <button id="defend-btn">🛡️ Suojaudu</button>
-          <button id="potion-btn">🍷 Juo potion</button>
-          <button id="restart-btn" style="display: none;">🔁 Yritä uudelleen</button>
-        </div>
       </div>
 
       <!-- Vihollisen tiedot -->
       <div id="enemy-stats" class="panel">
         <h2 id="enemy-name">Vihollinen</h2>
         <p id="enemy-health">HP: 50</p>
+        <div id="enemy-debug"></div>
       </div>
     </div>
+  </div>
+
+  <!-- Kiinteä napit-osio -->
+  <div id="fixed-controls">
+    <button id="attack-btn">🗡️ Hyökkää</button>
+    <button id="defend-btn">🛡️ Suojaudu</button>
+    <button id="potion-btn">🍷 Juo potion</button>
+    <button id="restart-btn" style="display: none;">🔁 Yritä uudelleen</button>
   </div>
 
   <script type="module" src="game.js"></script>
