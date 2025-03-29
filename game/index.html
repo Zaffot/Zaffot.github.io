@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taistelu 1.1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="game">
+    <h1>⚔️ Sankarin Taisto</h1>
+
+    <div id="layout">
+      <!-- Pelaajan tiedot -->
+      <div id="player-stats" class="panel">
+        <h2>Pelaaja</h2>
+        <p id="player-health">HP: 100</p>
+        <p id="player-xp">XP: 0</p>
+        <p id="player-level">Level: 1</p>
+        <div id="debug"></div>
+      </div>
+
+      <!-- Keskiosa: taistelu ja napit -->
+      <div id="battle" class="panel">
+        <!-- Pystypalkit -->
+        <div class="vertical-bar left">
+          <div id="player-health-bar" class="vertical-fill">Pelaaja</div>
+        </div>
+        <div class="vertical-bar right">
+          <div id="enemy-health-bar" class="vertical-fill">Vihollinen</div>
+        </div>
+
+        <!-- Loki ja kontrollit -->
+        <div id="log"></div>
+        <div id="controls">
+          <button id="attack-btn">🗡️ Hyökkää</button>
+          <button id="defend-btn">🛡️ Suojaudu</button>
+          <button id="potion-btn">🍷 Juo potion</button>
+          <button id="restart-btn" style="display: none;">🔁 Yritä uudelleen</button>
+        </div>
+      </div>
+
+      <!-- Vihollisen tiedot -->
+      <div id="enemy-stats" class="panel">
+        <h2 id="enemy-name">Vihollinen</h2>
+        <p id="enemy-health">HP: 50</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
