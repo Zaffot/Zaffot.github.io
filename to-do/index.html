@@ -7,41 +7,42 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="page-wrapper">
 
-  
-  <section class="hero">
-    <h1>To-Do List</h1>
-    <p>V 0.01</p>
-  </section>
+    <!-- Hero-osio -->
+    <section class="hero">
+      <h1>To-Do List</h1>
+      <p>V 0.01</p>
+    </section>
 
-  <!-- TO-DO- -->
-  <section class="about">
-    <div class="about-content">
-      <div class="todo-app">
+    <!-- To-Do -osio -->
+    <section class="about">
+      <div class="about-content">
+        <div class="todo-app">
 
-        
-        <div class="task-input">
-          <input type="text" id="taskInput" class="task-field" placeholder="Add new task" />
-          <button onclick="addTask()" class="add-task-btn">Add</button>
+          <div class="task-input">
+            <input type="text" id="taskInput" class="task-field" placeholder="Add new task" />
+            <button onclick="addTask()" class="add-task-btn">Add</button>
+          </div>
+
+          <ul id="taskList" class="task-list">
+            <!-- Task area -->
+          </ul>
+
+          <script src="todo.js"></script>
         </div>
-
-        
-        <ul id="taskList" class="task-list">
-          <!-- Task area-->
-        </ul>
-
-        
-        <script src="todo.js"></script>
       </div>
+    </section>
+
+    <div class="back-button-container">
+      <a href="https://zaffo.github.io/" class="back-button">🔙 Takaisin etusivulle</a>
     </div>
-  </section>
-  <div class="back-button-container">
-    <a href="https://zaffot.github.io/" class="back-button">🔙 Takaisin etusivulle</a>
-  </div>
-  
+
+  </div> <!-- .page-wrapper päättyy -->
+
+  <!-- Footer -->
   <footer class="footer">
     <p>© 2025 Bror Torstensson | Sähköposti: <a href="mailto:sahkoposti@esimerkki.com">sahkoposti@esimerkki.com</a></p>
   </footer>
-
 </body>
 </html>
