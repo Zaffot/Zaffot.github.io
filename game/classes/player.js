@@ -19,14 +19,14 @@ export class Player {
       while (this.xp >= this.nextLevelXP && this.level < 100) {
         this.xp -= this.nextLevelXP;
         this.level++;
-        this.nextLevelXP = Math.floor(this.nextLevelXP * 1.6); // kasvaa nopeasti
+        this.nextLevelXP = Math.floor(this.nextLevelXP * 1.6); // level up XP increases by 60%
   
-        // Kasvata statseja sopivasti
+        // Level up stats
         this.maxHealth += 5;
         this.attackMin += 1;
         this.attackMax += 2;
-        this.defence += (this.level % 2 === 0 ? 1 : 0); // joka toinen level antaa def
-        this.health = this.maxHealth; // parane aina täyteen
+        this.defence += (this.level % 2 === 0 ? 1 : 0); // defnce upgrade every second level
+        this.health = this.maxHealth; //resests health
   
         console.log(`Level up! Olet nyt tasolla ${this.level}`);
       }
@@ -34,7 +34,7 @@ export class Player {
   
     makeDamage(enemy) {
       let damage = Math.floor(Math.random() * (this.attackMax - this.attackMin + 1)) + this.attackMin;
-      const isCrit = Math.random() < 0.1; // 10% kriittinen
+      const isCrit = Math.random() < 0.1; // 10% change to crit
       if (isCrit) damage *= 2;
   
       const actualDamage = enemy.takeDamage(damage);

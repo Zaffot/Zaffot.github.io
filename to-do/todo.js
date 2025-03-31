@@ -79,7 +79,7 @@ function showTasks(task){
     }
 function deleteTask(id) {
     const confirmDelete = confirm("Are you sure you want to delete this task?");
-    if (!confirmDelete) return; // If the user cancels, do nothing
+    if (!confirmDelete) return; // If the user cancels, do nothting
 
     const index = tasks.findIndex(task => task.id === id);
     if(index !== -1) {
@@ -141,7 +141,7 @@ function loadTasksFromLocalStorage() {
         });
     }
 }
-//Curring the task
+//Curring the task 
 function addIdeaTask() {
   const ideaTask = createTaskWithPrefix("💡 Idea")("Suunnittele uusi ominaisuus");
   tasks.push(ideaTask);

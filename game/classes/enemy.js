@@ -3,11 +3,11 @@ export class Enemy {
   constructor(playerLevel) {
     this.name = this.generateName(playerLevel);
     this.level = playerLevel;
-    this.health = 18 + playerLevel * 7;
+    this.health = 18 + playerLevel * 7; // 18 + 7 * playerLevel
     this.maxHealth = this.health;
-    this.defence = Math.floor(playerLevel * 0.5); // pienempi alkuarvo
-    this.attackMin = 1 + Math.floor(playerLevel * 1); // pienennetty minimi
-    this.attackMax = this.attackMin + 2; // pienempi haarukka
+    this.defence = Math.floor(playerLevel * 0.5); // weapon damage is 1.5 * playerLevel
+    this.attackMin = 1 + Math.floor(playerLevel * 1); // attack damage is 1 + playerLevel
+    this.attackMax = this.attackMin + 2; 
   }
 
   makeDamage(player) {
