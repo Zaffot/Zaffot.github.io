@@ -7,41 +7,48 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page-wrapper">
 
-    <!-- Hero-osio -->
-    <section class="hero">
-      <h1>To-Do List</h1>
-      <p>V 0.01</p>
-    </section>
-
-    <!-- To-Do -osio -->
-    <section class="about">
-      <div class="about-content">
-        <div class="todo-app">
-
-          <div class="task-input">
-            <input type="text" id="taskInput" class="task-field" placeholder="Add new task" />
-            <button onclick="addTask()" class="add-task-btn">Add</button>
-          </div>
-
-          <ul id="taskList" class="task-list">
-            <!-- Task area -->
-          </ul>
-
-          <script src="todo.js"></script>
-        </div>
-      </div>
-    </section>
-
-    <div class="back-button-container">
-      <a href="https://zaffot.github.io/" class="back-button">🔙 Takaisin etusivulle</a>
-    </div>
-  </div> <!-- .page-wrapper päättyy -->
   
-  <!-- Footer -->
+  <section class="hero">
+    <h1>To-Do List</h1>
+    <p>V 0.01</p>
+  </section>
+
+  <!-- TO-DO- -->
+  <section class="about">
+    <div class="about-content">
+      <div class="todo-app">
+
+        
+        <div class="task-input">
+          <input type="text" id="taskInput" class="task-field" placeholder="Add new task" />
+          <button onclick="addTask()" class="add-task-btn">Add</button>
+        </div>
+        
+        <button onclick="addIdeaTask()" class="secondary-task-btn">💡 Lisää idea-tehtävä</button>
+        <button onclick="fetchJoke()" class="secondary-task-btn">🤣 Lisää vitsi tehtäväksi</button>
+        
+        <ul id="taskList" class="task-list">
+          <!-- Task area-->
+        </ul>
+
+        
+      
+      </div>
+    </div>
+  </section>
+  <div class="back-button-container">
+    <a href="index.html" class="back-button">🔙 Takaisin etusivulle</a>
+  </div>
+
+  <div class="joke-box">
+    <p id="joke">Haetaan päivän vitsi...</p>
+  </div>
+  
   <footer class="footer">
     <p>© 2025 Bror Torstensson | Sähköposti: <a href="mailto:sahkoposti@esimerkki.com">sahkoposti@esimerkki.com</a></p>
   </footer>
+
+<script src="todo.js"></script>
 </body>
 </html>

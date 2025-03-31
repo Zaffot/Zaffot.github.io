@@ -1,6 +1,8 @@
 const taskInput = document.getElementById('taskInput');
 const taskList = document.getElementById('taskList');
 const tasks = [];
+const createTaskWithPrefix = prefix => text => new Task(`${prefix}: ${text}`);
+
 
 taskInput.addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
@@ -139,5 +141,41 @@ function loadTasksFromLocalStorage() {
         });
     }
 }
+//Curring the task
+function addIdeaTask() {
+  const ideaTask = createTaskWithPrefix("💡 Idea")("Suunnittele uusi ominaisuus");
+  tasks.push(ideaTask);
+  showTasks(ideaTask);
+  saveTasks();
+}
+
+// API Testing 
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("https://official-joke-api.appspot.com/jokes/random")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("joke").textContent = `${data.setup} — ${data.punchline}`;
+      })
+      .catch(() => {
+        document.getElementById("joke").textContent = "Vitsin haku epäonnistui.";
+      });
+  });
+
+
+  async function fetchJoke() {
+    try {
+      const response = await fetch("https://api.chucknorris.io/jokes/random");
+      const data = await response.json();
+      const jokeTask = new Task(data.value);
+  
+      tasks.push(jokeTask);
+      showTasks(jokeTask);
+      saveTasks();
+    } catch (error) {
+      console.error("API-haku epäonnistui:", error);
+      alert("Vitsin haku epäonnistui.");
+    }
+  }
+
 
 loadTasksFromLocalStorage();
