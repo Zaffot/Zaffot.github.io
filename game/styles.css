@@ -116,7 +116,11 @@ button:hover {
   right: -32px;
   top: 0;
 }
-
+button.disabled {
+  background-color: #555 !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 .vertical-fill {
   background-color: #e53935;
   width: 100%;
@@ -160,7 +164,13 @@ button:hover {
     width: 90%;
     max-width: 300px;
   }
+  button.disabled {
+    background-color: #555 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
+
 
 @media (max-width: 480px) {
   #game {

@@ -1,25 +1,20 @@
-// enemy.js
 export class Enemy {
   constructor(playerLevel) {
     this.name = this.generateName(playerLevel);
     this.level = playerLevel;
-    this.health = 18 + playerLevel * 7; // 18 + 7 * playerLevel
+    this.health = 18 + playerLevel * 7;
     this.maxHealth = this.health;
-    this.defence = Math.floor(playerLevel * 0.5); // weapon damage is 1.5 * playerLevel
-    this.attackMin = 1 + Math.floor(playerLevel * 1); // attack damage is 1 + playerLevel
-    this.attackMax = this.attackMin + 2; 
+    this.defence = Math.floor(playerLevel * 0.5);
+    this.attackMin = 1 + Math.floor(playerLevel * 1);
+    this.attackMax = this.attackMin + 2;
   }
 
   makeDamage(player) {
     let damage = Math.floor(Math.random() * (this.attackMax - this.attackMin + 1)) + this.attackMin;
     const isCrit = Math.random() < 0.05;
-    if (isCrit) damage *= 2.1;
-
+    if (isCrit) damage = Math.floor(damage * 2.1);
     const actualDamage = player.takeDamage(damage);
-    return {
-      damage: actualDamage,
-      isCrit: isCrit
-    };
+    return { damage: actualDamage, isCrit };
   }
 
   takeDamage(amount) {
