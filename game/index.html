@@ -3,63 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Taistelu 1.1</title>
+  <title>Sankarin Taisto</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="game">
     <h1>⚔️ Sankarin Taisto</h1>
-    <section id="instructions" class="panel" style="margin-bottom: 1rem;">
-      <h2>📜 Ohjeet</h2>
+
+    <button class="toggle-instructions" onclick="document.getElementById('instructions').classList.toggle('collapsed')">Näytä/piilota ohjeet</button>
+    <div id="instructions" class="panel collapsed">
+      <h2>Peliohjeet</h2>
       <ul>
-        <li><strong>Hyökkää:</strong> Tekee vahinkoa viholliseen. Satunnainen mahdollisuus kriittiseen osumaan.</li>
-        <li><strong>Suojaudu:</strong> Vähentää vahinkoa 50 %, ei vie vuoroa. Seuraava isku on 30 % heikompi eikä voi olla kriittinen.</li>
-        <li><strong>Juo potion:</strong> Palauttaa 30–60 % elämää. Vain kerran per vihollinen.</li>
-        <li>Vihollisen kaataminen palauttaa kaiken elämän.</li>
-        <li>Kerää XP:tä, kehity tasoilla, ja kohtaa vaikeampia vastustajia!</li>
+        <li>🗡️ Hyökkää: normaali hyökkäys</li>
+        <li>🛡️ Suojaudu: vähentää vahinkoa (ei vie vuoroa)</li>
+        <li>🍷 Potion: kerran per vihollinen</li>
+        <li>💚 HoT: parantaa 3 kierrosta, 5 kierroksen cooldown</li>
+        <li>🗡️ Bleed: 20–40 % vahinkoa, kestää 3 kierrosta</li>
+        <li>💥 Power: latautuu 20 pisteellä, reset taistelun jälkeen</li>
       </ul>
-    </section>
-    <div id="layout">
-      <!-- Pelaajan tiedot -->
-      <div id="player-stats" class="panel">
-        <h2>Pelaaja</h2>
-        <p id="player-health">HP: 100</p>
-        <p id="player-xp">XP: 0</p>
-        <p id="player-level">Level: 1</p>
-        <div id="debug"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Vihollisen tiedot</h2>
+      <div id="enemy-debug"></div>
+    </div>
+    
+    <div class="panel">
+      <div class="health-bar-container">
+        <div id="enemy-health-bar" class="health-bar-fill"></div>
       </div>
+      <div id="enemy-name">Vihollinen</div>
+    </div>
 
-      <!-- Keskiosa: taistelu -->
-      <div id="battle" class="panel">
-        <!-- Pystypalkit -->
-        <div class="vertical-bar left">
-          <div id="player-health-bar" class="vertical-fill">Pelaaja</div>
-        </div>
-        <div class="vertical-bar right">
-          <div id="enemy-health-bar" class="vertical-fill">Vihollinen</div>
-        </div>
+    <div class="panel" id="log">Tervetuloa peliin!</div>
 
-        <!-- Loki -->
-        <div id="log"></div>
-      </div>
-
-      <!-- Vihollisen tiedot -->
-      <div id="enemy-stats" class="panel">
-        <h2 id="enemy-name">Vihollinen</h2>
-        <p id="enemy-health">HP: 50</p>
-        <div id="enemy-debug"></div>
+    <div class="panel">
+      <div id="player-name">Sankari</div>
+      <div class="health-bar-container">
+        <div id="player-health-bar" class="health-bar-fill"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Kiinteä napit-osio -->
-  <div id="fixed-controls">
-    <button id="attack-btn">🗡️ Hyökkää</button>
-    <button id="defend-btn">🛡️ Suojaudu</button>
-    <button id="potion-btn">🍷 Juo potion</button>
-    <button id="restart-btn" style="display: none;">🔁 Yritä uudelleen</button>
-  </div>
+    <div id="fixed-controls">
+      <button id="attack-btn">🗡️ Hyökkää</button>
+      <button id="defend-btn">🛡️ Suojaudu</button>
+      <button id="potion-btn">🍷 Potion</button>
+      <button id="hot-btn">💚 HoT</button>
+      <button id="bleed-btn">🗡️ Bleed</button>
+      <button id="power-btn">💥 Power</button>
+      <button id="restart-btn" style="display: none;">🔁 Yritä uudelleen</button>
+    </div>
 
+    <div class="panel">
+      <h2>Pelaajan tiedot</h2>
+      <div id="debug"></div>
+    </div>
+
+    <div id="patch-notes">
+      <h2>Päivitykset</h2>
+      <ul>
+        <li><strong>v1.1</strong> - peruspeli: hyökkäys, suojaus, potionit, XP ja tasonnousu</li>
+        <li><strong>v1.2</strong> - Visuaaliset päivitykset, health barit, mobiilituki</li>
+        <li><strong>v1.3</strong> - Bossit joka 10. vihollinen, oma nimi, suojauslogiikka parannettu</li>
+        <li><strong>v1.4</strong>
+          <ul>
+            <li>HoT (Healing Over Time), cooldown 5 vuoroa</li>
+            <li>Bleed (DoT): 20–40% HP, 3 kierrosta</li>
+            <li>Power-isku: latautuu 20 pisteellä, nollautuu taistelun jälkeen</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
   <script type="module" src="game.js"></script>
 </body>
 </html>

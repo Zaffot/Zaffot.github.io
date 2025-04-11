@@ -1,180 +1,139 @@
+/* styles.css */
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background-color: #121212;
   color: #f5f5f5;
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding-bottom: 100px; /* tilaa kiinteille napeille */
 }
 
 #game {
-  background-color: #1e1e1e;
-  border-radius: 12px;
-  padding: 2rem;
-  margin: 2rem;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-  width: 100%;
-  max-width: 1000px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-#layout {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-}
-
-.panel {
-  flex: 1;
-  background-color: #292929;
-  padding: 1rem;
-  border-radius: 8px;
-}
-
-#battle {
-  position: relative;
-}
-
-#controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
   margin-bottom: 1rem;
 }
 
-button {
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  background-color: #0077cc;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.panel {
+  background-color: #1e1e1e;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
-button:hover {
-  background-color: #005fa3;
+.health-bar-container {
+  background-color: #333;
+  border-radius: 4px;
+  height: 20px;
+  width: 100%;
+  overflow: hidden;
+  margin: 0.25rem 0;
+}
+
+.health-bar-fill {
+  background-color: #e53935;
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
 }
 
 #log {
   background-color: #222;
-  padding: 1rem;
-  border-radius: 8px;
-  white-space: pre-wrap;
+  padding: 0.75rem;
+  border-radius: 6px;
   min-height: 100px;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
   margin-top: 1rem;
-}
-
-.health-container {
-  background-color: #444;
-  border-radius: 5px;
-  width: 100%;
-  height: 16px;
-  margin-top: 0.5rem;
-  overflow: hidden;
-}
-
-.health-bar {
-  height: 100%;
-  background-color: #e53935;
-  width: 100%;
-  transition: width 0.3s ease-in-out;
-  border-radius: 5px;
-}
-
-.vertical-bar {
-  position: absolute;
-  width: 24px;
-  height: 100%;
-  background-color: #444;
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  font-size: 0.6rem;
-  writing-mode: vertical-rl;
-  text-align: center;
-  color: white;
-}
-
-.vertical-bar.left {
-  left: -32px;
-  top: 0;
-}
-
-.vertical-bar.right {
-  right: -32px;
-  top: 0;
-}
-button.disabled {
-  background-color: #555 !important;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.vertical-fill {
-  background-color: #e53935;
-  width: 100%;
-  transition: height 0.3s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 4px;
+  margin-bottom: 1rem;
 }
 
 #fixed-controls {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #1e1e1e;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.5rem;
   padding: 1rem;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  z-index: 1000;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-  flex-wrap: wrap;
+  margin-top: 1rem;
+  background: #1e1e1e;
+  border-radius: 8px;
+  position: sticky;
+  bottom: 0;
+
 }
 
-@media (max-width: 768px) {
-  #layout {
-    flex-direction: column;
-  }
+button {
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  background-color: #0077cc;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  word-wrap: break-word;
+  white-space: normal;
+  min-height: 60px;
+}
 
-  .panel {
-    width: 100%;
-  }
+button:hover:not(:disabled) {
+  background-color: #005fa3;
+}
 
-  #controls {
-    flex-direction: column;
-    align-items: center;
+button.disabled, button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+#instructions.collapsed {
+  display: none;
+}
+
+.toggle-instructions {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+#patch-notes {
+  background-color: #1e1e1e;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+#patch-notes ul {
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+@media (max-width: 480px) {
+  #fixed-controls {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   button {
-    width: 90%;
-    max-width: 300px;
+    font-size: 0.8rem;
+    min-height: 60px;
+    padding: 0.75rem 0.25rem;
   }
-  button.disabled {
-    background-color: #555 !important;
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
 
-
-@media (max-width: 480px) {
-  #game {
-    margin: 1rem;
-    padding: 1rem;
+  .health-bar-fill {
+    font-size: 0.7rem;
   }
 }
