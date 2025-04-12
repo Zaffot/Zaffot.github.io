@@ -8,8 +8,15 @@ if (player.health <= 0 || player.maxHealth <= 0) {
   localStorage.removeItem("diabloCloneSave");
   location.reload();
 }
+let enemyCount = 0;
 
-let enemy = new Enemy(player.level);
+function createNewEnemy() {
+  enemyCount++;
+  const isBoss = enemyCount % 10 === 0; // 🔧 Muuta tästä kuinka usein boss tulee
+  return new Enemy(player.level, isBoss);
+}
+
+let enemy = createNewEnemy();
 let potionUsed = false;
 let playerHits = 0;
 let bleedTurns = 0;
@@ -65,13 +72,15 @@ attackBtn.addEventListener("click", () => {
   }
 
   if (enemy.health <= 0) {
-    const xpGained = enemy.level * 15;
+    const xpGained = enemy.isBoss
+    ? enemy.level * (Math.floor(Math.random() * 3) + 2) * 10  // Boss: 2x–4x XP (kerroin *10)
+    : enemy.level * 15;
     player.gainXP(xpGained);
     player.health = player.maxHealth;
     logDiv.innerText += `\n💀 Vihollinen kaatui! Saat ${xpGained} XP:tä!`;
     logDiv.innerText += `\n🩹 ${player.name} palautti kaiken elämänsä!`;
 
-    enemy = new Enemy(player.level);
+    enemy = createNewEnemy();
     potionUsed = false;
     powerBtn.disabled = true;
     playerHits = 0;
@@ -99,7 +108,7 @@ attackBtn.addEventListener("click", () => {
 });
 
 powerBtn.addEventListener("click", () => {
-  if (playerHits < 15 || player.health <= 0) return;
+  if (playerHits < 10 || player.health <= 0) return;
   let damage = player.attackMax * 2;
   const actual = enemy.takeDamage(damage);
   logDiv.innerText = `💥 Power-isku! ${player.name} teki ${actual} vahinkoa!`;
@@ -160,7 +169,7 @@ restartBtn.addEventListener("click", () => {
 });
 
 function updatePowerStatus() {
-  powerBtn.disabled = playerHits < 15;
+  powerBtn.disabled = playerHits < 10;
 }
 
 function updateAbilityStatus() {
@@ -185,7 +194,7 @@ function updateStats() {
   document.getElementById("enemy-health-bar").style.width = `${(enemy.health / enemy.maxHealth) * 100}%`;
   document.getElementById("enemy-name").textContent = `${enemy.name}`;
   const debugDiv = document.getElementById("debug");
-  debugDiv.innerHTML = `Level: ${player.level}<br>XP: ${player.xp}/${player.nextLevelXP}<br>HP: ${player.health}/${player.maxHealth}<br>Power charge: ${playerHits} / 15`;
+  debugDiv.innerHTML = `Level: ${player.level}<br>XP: ${player.xp}/${player.nextLevelXP}<br>HP: ${player.health}/${player.maxHealth}<br>Power charge: ${playerHits} / 10`;
   const enemyStatsDiv = document.getElementById("enemy-debug");
   const stats = enemy.getStats();
   enemyStatsDiv.innerHTML = `Level: ${stats.level}<br>HP: ${stats.hp}/${stats.maxHp}<br>Attack: ${stats.attack}<br>Defence: ${stats.defence}`;

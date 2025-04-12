@@ -5,11 +5,13 @@ export class Enemy {
     this.level = playerLevel;
     this.isBoss = isBoss;
 
-    this.health = (isBoss ? 1.5 : 1) * (18 + playerLevel * 7);
+    this.health = isBoss 
+    ? 50 + playerLevel * 10 // boss HP
+     : 18 + playerLevel * 7; //normi enemy hp
     this.maxHealth = this.health;
-    this.defence = Math.floor(playerLevel * 0.5);
-    this.attackMin = 1 + Math.floor(playerLevel * 1);
-    this.attackMax = this.attackMin + 2;
+    this.defence = Math.floor(playerLevel * 0.5); //this.defence = Math.floor(playerLevel * (isBoss ? 1.2 : 0.5));
+    this.attackMin = 1 + Math.floor(playerLevel * 1); //this.attackMin = 1 + Math.floor(playerLevel * (isBoss ? 1.5 : 1));
+    this.attackMax = this.attackMin + 2;  //this.attackMax = this.attackMin + (isBoss ? 5 : 2);
 
     this.isBleeding = false;
     this.bleedTurns = 0;
