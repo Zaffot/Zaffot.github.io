@@ -45,7 +45,10 @@ attackBtn.addEventListener("click", () => {
   let damage = Math.floor(Math.random() * (player.attackMax - player.attackMin + 1)) + player.attackMin;
   let isCrit = Math.random() < 0.1;
   if (isCrit) damage = Math.floor(damage * 2);
-  if (player.isDefending) damage = Math.floor(damage * 0.7);
+  if (player.isDefending){ damage = 
+    Math.floor(damage * 0.7);
+    damage = Math.max(1, damage); // ei koskaan alle 1 kun pelaaja suojaa
+  }
 
   const actualDamage = enemy.takeDamage(damage);
   logDiv.innerText = `👊 ${player.name} teki ${actualDamage} vahinkoa.` +
