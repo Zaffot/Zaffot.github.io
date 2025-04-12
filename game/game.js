@@ -73,7 +73,7 @@ attackBtn.addEventListener("click", () => {
 
   if (enemy.health <= 0) {
     const xpGained = enemy.isBoss
-    ? enemy.level * (Math.floor(Math.random() * 2) + 3) * 10  // Boss: 2x–4x XP (kerroin *10)
+    ? enemy.level * (Math.floor(Math.random() * 2) + 3) * 10  // Boss: 3x–4x XP (kerroin *10)
     : enemy.level * 15;
     player.gainXP(xpGained);
     player.health = player.maxHealth;
