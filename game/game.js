@@ -199,6 +199,18 @@ function updateStats() {
   const stats = enemy.getStats();
   enemyStatsDiv.innerHTML = `Level: ${stats.level}<br>HP: ${stats.hp}/${stats.maxHp}<br>Attack: ${stats.attack}<br>Defence: ${stats.defence}`;
 }
+
+// 🎮 Hotkey-numerot 1–7 (hyökkäykset ja reset)
+document.addEventListener("keydown", (e) => {
+  if (e.key === "1") attackBtn.click();
+  else if (e.key === "2") defendBtn.click();
+  else if (e.key === "3") potionBtn.click();
+  else if (e.key === "4") hotBtn.click();
+  else if (e.key === "5") bleedBtn.click();
+  else if (e.key === "6") powerBtn.click();
+  else if (e.key === "7") restartBtn.click();
+});
+
 function saveGame() {
   const saveData = {
     level: player.level,
