@@ -18,7 +18,7 @@ export class Player {
     while (this.xp >= this.nextLevelXP && this.level < 100) {
       this.xp -= this.nextLevelXP;
       this.level++;
-      this.nextLevelXP = Math.floor(this.nextLevelXP * 1.6);
+      this.nextLevelXP = Math.floor(this.nextLevelXP * 1.22); // muuta 1.x lukua vaihtaaksesi xp maximi määrää per lvl
       this.maxHealth += 5;
       this.attackMin += 1;
       this.attackMax += 2;
