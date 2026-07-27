@@ -43,6 +43,10 @@ const els = {
   settingsDialog: document.querySelector("#settingsDialog"),
   dailyMinutes: document.querySelector("#dailyMinutes"),
   settingsForm: document.querySelector("#settingsForm"),
+  resetDayButton: document.querySelector("#resetDayButton"),
+  resetConfirm: document.querySelector("#resetConfirm"),
+  confirmResetButton: document.querySelector("#confirmResetButton"),
+  cancelResetButton: document.querySelector("#cancelResetButton"),
   toast: document.querySelector("#toast")
 };
 
@@ -212,7 +216,6 @@ els.finishButton.addEventListener("click", () => {
 
 document.querySelectorAll(".adjust-button").forEach(button => {
   button.addEventListener("click", () => {
-    commitActiveTime();
     const amount = Number(button.dataset.minutes);
     const day = ensureToday();
     day.adjustment += amount;
@@ -231,7 +234,30 @@ els.showHistoryButton.addEventListener("click", () => {
 
 els.settingsButton.addEventListener("click", () => {
   els.dailyMinutes.value = state.dailyMinutes;
+  resetResetConfirmation();
   els.settingsDialog.showModal();
+});
+
+function resetResetConfirmation() {
+  els.resetDayButton.classList.remove("hidden");
+  els.resetConfirm.classList.add("hidden");
+}
+
+els.resetDayButton.addEventListener("click", () => {
+  els.resetDayButton.classList.add("hidden");
+  els.resetConfirm.classList.remove("hidden");
+});
+
+els.cancelResetButton.addEventListener("click", resetResetConfirmation);
+
+els.confirmResetButton.addEventListener("click", () => {
+  state.activeSince = null;
+  state.days[dateKey()] = { adjustment: 0, usedSeconds: 0, finished: false };
+  save();
+  resetResetConfirmation();
+  els.settingsDialog.close();
+  showToast("Tämä päivä on resetoitu");
+  render();
 });
 
 els.settingsForm.addEventListener("submit", event => {
@@ -246,8 +272,17 @@ els.settingsForm.addEventListener("submit", event => {
 });
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) render();
+  if (!document.hidden) syncFromStorage();
 });
+
+function syncFromStorage() {
+  state = loadState();
+  render();
+}
+
+window.addEventListener("focus", syncFromStorage);
+window.addEventListener("pageshow", syncFromStorage);
+window.addEventListener("pagehide", save);
 
 window.addEventListener("storage", event => {
   if (event.key === STORAGE_KEY) {

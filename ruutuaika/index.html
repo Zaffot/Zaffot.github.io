@@ -80,6 +80,19 @@
       <div class="input-row"><input id="dailyMinutes" name="dailyMinutes" type="number" min="5" max="240" step="5" inputmode="numeric"><span>min</span></div>
       <p class="helper-text">Uusi tavoite tulee käyttöön heti ja on huomisen lähtöaika.</p>
       <button class="primary-button compact" value="save" id="saveSettingsButton">Tallenna</button>
+
+      <section class="reset-section" aria-labelledby="resetHeading">
+        <h3 id="resetHeading">Resetoi päivä</h3>
+        <p class="helper-text">Poistaa tämän päivän käytetyn ajan ja muutokset. Päivän tavoite säilyy.</p>
+        <button class="danger-button" id="resetDayButton" type="button">Resetoi tämä päivä</button>
+        <div class="reset-confirm hidden" id="resetConfirm">
+          <p>Oletko varmasti varma? Tätä ei voi perua.</p>
+          <div class="confirm-actions">
+            <button class="danger-button solid" id="confirmResetButton" type="button">Kyllä, resetoi päivä</button>
+            <button class="secondary-button compact" id="cancelResetButton" type="button">Peruuta</button>
+          </div>
+        </div>
+      </section>
     </form>
   </dialog>
 
