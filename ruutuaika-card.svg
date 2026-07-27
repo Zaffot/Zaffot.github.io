@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-labelledby="title desc">
+  <title id="title">Ruutuaika</title>
+  <desc id="desc">Tabletti ja ajastin mustavalkoisena viivakuvakkeena</desc>
+  <rect width="500" height="500" fill="#fff"/>
+
+  <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M38 285C9 190 56 89 145 39C236-12 360 19 430 105C501 192 488 324 405 406C319 491 179 488 91 402C20 332 12 222 60 137" stroke-width="3.5"/>
+    <path d="M30 337C-2 239 33 130 119 61C203-7 333-2 421 82C510 167 515 301 433 393C352 484 212 506 108 441C47 403 9 340 9 276" stroke-width="2"/>
+
+    <rect x="120" y="92" width="246" height="316" rx="30" stroke-width="14"/>
+    <path d="M212 364H274" stroke-width="14"/>
+    <circle cx="332" cy="316" r="74" fill="#fff" stroke-width="14"/>
+    <path d="M332 276V316L362 335" stroke-width="14"/>
+  </g>
+</svg>
