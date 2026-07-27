@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f3e8">
+  <meta name="description" content="Ruutuaika – kannustava ja helppo ruutuajan seuranta perheelle.">
+  <title>Ruutuaika</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="todayLabel">Tänään</p>
+        <h1>Ruutuaika</h1>
+      </div>
+      <button class="icon-button" id="settingsButton" type="button" aria-label="Avaa asetukset">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.86 1.86-.06-.06A1.7 1.7 0 0 0 16 18.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V20h-2.6v-.1a1.7 1.7 0 0 0-1.1-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.86-1.86.06-.06A1.7 1.7 0 0 0 7.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H5.8V11h.1A1.7 1.7 0 0 0 7.46 9.9a1.7 1.7 0 0 0-.34-1.88l-.06-.06L8.92 6.1l.06.06A1.7 1.7 0 0 0 10.86 6a1.7 1.7 0 0 0 1-1.6v-.1h2.6v.1A1.7 1.7 0 0 0 16 5.96a1.7 1.7 0 0 0 1.88-.34l.06-.06 1.86 1.86-.06.06A1.7 1.7 0 0 0 19.4 9.36a1.7 1.7 0 0 0 1.6 1h.1v2.6H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+      </button>
+    </header>
+
+    <section class="hero-card" aria-labelledby="timeHeading">
+      <div class="sun sun-one"></div>
+      <div class="sun sun-two"></div>
+      <p id="timeHeading">Aikaa jäljellä</p>
+      <div class="time-display" id="timeDisplay" aria-live="polite">30:00</div>
+      <div class="progress-track" role="progressbar" aria-label="Ruutuaikaa jäljellä" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="status-message" id="statusMessage">Koko päivän ruutuaika on vielä tallessa ✨</p>
+      <button class="primary-button" id="timerButton" type="button">
+        <span class="play-icon" aria-hidden="true"></span>
+        <span id="timerButtonText">Aloita ruutuaika</span>
+      </button>
+      <button class="text-button hidden" id="finishButton" type="button">Lopeta tältä päivältä</button>
+    </section>
+
+    <section class="parent-card" aria-labelledby="parentHeading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Vanhemmalle</p>
+          <h2 id="parentHeading">Muokkaa aikaa</h2>
+        </div>
+        <span class="today-total" id="todayTotal">Tänään 30 min</span>
+      </div>
+      <div class="adjust-grid">
+        <button class="adjust-button minus" type="button" data-minutes="-10"><strong>−10</strong><span>min</span></button>
+        <button class="adjust-button minus" type="button" data-minutes="-5"><strong>−5</strong><span>min</span></button>
+        <button class="adjust-button plus" type="button" data-minutes="5"><strong>+5</strong><span>min</span></button>
+        <button class="adjust-button plus" type="button" data-minutes="10"><strong>+10</strong><span>min</span></button>
+      </div>
+      <p class="helper-text">Muutokset koskevat vain tätä päivää. Huomenna aika palautuu automaattisesti.</p>
+    </section>
+
+    <section class="history-card" aria-labelledby="historyHeading">
+      <div class="section-heading history-title">
+        <div>
+          <p class="eyebrow">Viimeiset 30 päivää</p>
+          <h2 id="historyHeading">Pieni edistysloki</h2>
+        </div>
+        <span class="streak" id="streakBadge">0 hyvää päivää</span>
+      </div>
+      <div class="summary-grid">
+        <div><strong id="averageUsed">0 min</strong><span>keskimäärin käytetty</span></div>
+        <div><strong id="daysOnTarget">0 / 30</strong><span>tavoitteessa</span></div>
+      </div>
+      <div class="history-list" id="historyList"></div>
+      <button class="secondary-button" id="showHistoryButton" type="button">Näytä kaikki 30 päivää</button>
+    </section>
+  </main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-card" id="settingsForm">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">Asetukset</p><h2>Päivän tavoite</h2></div>
+        <button class="icon-button small" value="cancel" aria-label="Sulje">×</button>
+      </div>
+      <label for="dailyMinutes">Ruutuaikaa päivässä</label>
+      <div class="input-row"><input id="dailyMinutes" name="dailyMinutes" type="number" min="5" max="240" step="5" inputmode="numeric"><span>min</span></div>
+      <p class="helper-text">Uusi tavoite tulee käyttöön heti ja on huomisen lähtöaika.</p>
+      <button class="primary-button compact" value="save" id="saveSettingsButton">Tallenna</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
