@@ -1,0 +1,11 @@
+{
+  "name": "PadelPoints",
+  "short_name": "PadelPoints",
+  "description": "Padelin pistelaskuri, syöttövuorot ja pelihistoria.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061713",
+  "theme_color": "#071d18",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
