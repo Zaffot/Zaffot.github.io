@@ -9,7 +9,12 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
-  <style>.serve[hidden]{display:none}</style>
+  <style>
+    .serve[hidden],.event-list[hidden]{display:none}
+    .event-list{max-height:310px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;scrollbar-color:var(--line) transparent;scrollbar-width:thin}
+    .panel-chevron{display:inline-block;transition:transform .2s ease}
+    .panel-toggle[aria-expanded="true"] .panel-chevron{transform:rotate(180deg)}
+  </style>
 </head>
 <body>
   <header class="app-header">
@@ -76,7 +81,7 @@
 
     <section class="panel history-panel">
       <button class="panel-toggle" type="button" aria-expanded="false" aria-controls="pointHistory">
-        <span><b>Pistehistoria</b> <small id="pointCount">0 tapahtumaa</small></span><span>⌄</span>
+        <span><b>Pistehistoria</b> <small id="pointCount">0 tapahtumaa</small></span><span class="panel-chevron" aria-hidden="true">⌄</span>
       </button>
       <ol id="pointHistory" class="event-list" hidden></ol>
     </section>
