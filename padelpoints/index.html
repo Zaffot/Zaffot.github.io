@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071d18">
+  <meta name="description" content="Mobiiliystävällinen padelin pistelaskuri, syöttövuorot ja paikallinen pelihistoria.">
+  <title>PadelPoints</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <style>.serve[hidden]{display:none}</style>
+</head>
+<body>
+  <header class="app-header">
+    <a class="home-link" href="../" aria-label="Takaisin projektisivulle">←</a>
+    <div>
+      <p class="eyebrow">PADEL SCOREBOARD</p>
+      <h1>Padel<span>Points</span></h1>
+    </div>
+    <button id="installButton" class="icon-button install-button" type="button" hidden aria-label="Asenna sovellus">↓</button>
+  </header>
+
+  <main>
+    <section class="scoreboard" aria-labelledby="scoreboardTitle">
+      <div class="match-meta">
+        <h2 id="scoreboardTitle">Käynnissä oleva peli</h2>
+        <div class="set-score" aria-label="Erätilanne">
+          <span>ERÄT <b id="setsScore">0–0</b></span>
+          <span>PELIT <b id="gamesScore">0–0</b></span>
+        </div>
+      </div>
+
+      <div class="teams">
+        <article class="team team-a" data-team="a">
+          <label class="team-name-label" for="teamAName">Tiimin nimi</label>
+          <input id="teamAName" class="team-name" value="Tiimi A" maxlength="20">
+          <div id="playersA" class="team-players" aria-live="polite"></div>
+          <button class="score-button" type="button" data-score-team="a" aria-label="Lisää piste Tiimille A">
+            <span id="scoreA" class="point-score">0</span>
+            <span class="add-point">+ PISTE</span>
+          </button>
+          <div id="advantageA" class="advantage" hidden>ETU</div>
+          <div id="serveA" class="serve" hidden>
+            <strong>SYÖTTÖ</strong>
+            <span class="mini-court"><i></i></span>
+            <small id="serveSideA">OIKEALTA</small>
+          </div>
+        </article>
+
+        <div class="versus" aria-hidden="true">VS</div>
+
+        <article class="team team-b" data-team="b">
+          <label class="team-name-label" for="teamBName">Tiimin nimi</label>
+          <input id="teamBName" class="team-name" value="Tiimi B" maxlength="20">
+          <div id="playersB" class="team-players" aria-live="polite"></div>
+          <button class="score-button" type="button" data-score-team="b" aria-label="Lisää piste Tiimille B">
+            <span id="scoreB" class="point-score">0</span>
+            <span class="add-point">+ PISTE</span>
+          </button>
+          <div id="advantageB" class="advantage" hidden>ETU</div>
+          <div id="serveB" class="serve" hidden>
+            <strong>SYÖTTÖ</strong>
+            <span class="mini-court"><i></i></span>
+            <small id="serveSideB">OIKEALTA</small>
+          </div>
+        </article>
+      </div>
+
+      <p id="statusMessage" class="status-message" aria-live="polite">Aloita peli lisäämällä ensimmäinen piste.</p>
+      <div class="score-actions">
+        <button id="undoButton" class="secondary-button" type="button">↶ Kumoa</button>
+        <button id="newMatchButton" class="secondary-button danger" type="button">Uusi ottelu</button>
+      </div>
+    </section>
+
+    <section class="panel history-panel">
+      <button class="panel-toggle" type="button" aria-expanded="false" aria-controls="pointHistory">
+        <span><b>Pistehistoria</b> <small id="pointCount">0 tapahtumaa</small></span><span>⌄</span>
+      </button>
+      <ol id="pointHistory" class="event-list" hidden></ol>
+    </section>
+
+    <section class="panel mixed-panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">PELAAJADATA</p><h2>Sekapeli</h2></div>
+        <label class="switch"><input id="mixedMode" type="checkbox"><span></span><em>Aktivoi</em></label>
+      </div>
+      <div id="mixedContent" hidden>
+        <p class="helper">Lisää päivän pelaajat. Kokoonpano pysyy lukittuna pelin ajan ja hävinnyt tiimi voidaan vaihtaa pelin päätyttyä.</p>
+        <form id="playerForm" class="player-form">
+          <label for="playerName">Pelaajan nimi</label>
+          <div><input id="playerName" maxlength="24" autocomplete="off" placeholder="Esim. Matti"><button type="submit">Lisää</button></div>
+        </form>
+        <div id="playerPool" class="player-pool"></div>
+        <div class="team-picker">
+          <button type="button" data-pick-team="a" class="pick-team active">Valitse Tiimi A</button>
+          <button type="button" data-pick-team="b" class="pick-team">Valitse Tiimi B</button>
+        </div>
+        <p id="lineupHint" class="helper centered">Valitse kaksi pelaajaa Tiimiin A.</p>
+        <div class="stats-wrap">
+          <h3>Pelaajatilastot</h3>
+          <div id="playerStats" class="stats-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel daily-panel">
+      <div class="panel-heading"><div><p class="eyebrow">TALLENNETTU LAITTEELLE</p><h2>Tämän päivän pelit</h2></div><b id="todayCount">0</b></div>
+      <div id="dailyMatches" class="daily-matches"></div>
+    </section>
+  </main>
+
+  <footer>PadelPoints · tiedot säilyvät tämän laitteen selaimessa</footer>
+  <script src="app.js"></script>
+</body>
+</html>
