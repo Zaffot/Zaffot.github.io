@@ -42,7 +42,6 @@
           <label class="team-name-label" for="teamAName">Tiimin nimi</label>
           <input id="teamAName" class="team-name" value="Tiimi A" maxlength="20">
           <div class="team-score-card">
-            <div id="playersA" class="team-players" aria-live="polite"></div>
             <button class="score-button" type="button" data-score-team="a" aria-label="Lisää piste Tiimille A">
               <span id="scoreA" class="point-score">0</span>
               <span id="advantageA" class="advantage" aria-hidden="true">ETU</span>
@@ -62,7 +61,6 @@
           <label class="team-name-label" for="teamBName">Tiimin nimi</label>
           <input id="teamBName" class="team-name" value="Tiimi B" maxlength="20">
           <div class="team-score-card">
-            <div id="playersB" class="team-players" aria-live="polite"></div>
             <button class="score-button" type="button" data-score-team="b" aria-label="Lisää piste Tiimille B">
               <span id="scoreB" class="point-score">0</span>
               <span id="advantageB" class="advantage" aria-hidden="true">ETU</span>
@@ -88,8 +86,14 @@
           <small>Valitse tiimi ja napauta vapaa pelaaja sen kokoonpanoon.</small>
         </div>
         <div class="team-picker">
-          <button type="button" data-pick-team="a" class="pick-team active">Valitse Tiimi A</button>
-          <button type="button" data-pick-team="b" class="pick-team">Valitse Tiimi B</button>
+          <div class="pick-team-card" data-team-picker="a">
+            <button type="button" data-pick-team="a" class="pick-team active">Valitse Tiimi A</button>
+            <div id="playersA" class="picker-lineup" aria-live="polite"></div>
+          </div>
+          <div class="pick-team-card" data-team-picker="b">
+            <button type="button" data-pick-team="b" class="pick-team">Valitse Tiimi B</button>
+            <div id="playersB" class="picker-lineup" aria-live="polite"></div>
+          </div>
         </div>
         <div id="playerPool" class="player-pool"></div>
         <p id="lineupHint" class="helper centered">Valitse kaksi pelaajaa Tiimiin A.</p>
