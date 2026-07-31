@@ -1,0 +1,181 @@
+.team-score-card {
+  min-height: 212px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(1, 10, 8, .42);
+  transition: border-color .12s ease, background .12s ease;
+}
+
+.team-a .team-score-card:hover { border-color: var(--a); background: rgba(69, 216, 255, .07); }
+.team-b .team-score-card:hover { border-color: var(--b); background: rgba(255, 97, 120, .07); }
+
+.team-score-card .team-players {
+  position: relative;
+  z-index: 2;
+  min-height: 62px;
+  padding: 10px 7px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  border-bottom: 1px solid rgba(39, 80, 68, .65);
+  overflow: visible;
+  white-space: normal;
+}
+
+.lineup-player,
+.lineup-placeholder {
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: rgba(6, 23, 19, .82);
+  font-size: .64rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.team-a .lineup-player { color: var(--a); }
+.team-b .lineup-player { color: var(--b); }
+.lineup-player:not(:disabled) { cursor: pointer; }
+.lineup-player:disabled { opacity: .82; }
+.lineup-placeholder { color: #68877d; border-style: dashed; }
+
+.team-score-card .score-button {
+  position: relative;
+  z-index: 1;
+  min-height: 160px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.team-score-card .score-button:hover { border: 0; background: transparent; }
+.team-score-card .point-score { line-height: .8; }
+
+.team-score-card .advantage {
+  height: 15px;
+  margin: 7px 0 0;
+  opacity: 0;
+  visibility: hidden;
+  color: var(--lime);
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+  line-height: 15px;
+}
+
+.team-score-card .advantage.is-visible { opacity: 1; visibility: visible; }
+.team-score-card .add-point { margin-top: 6px; }
+
+.golden-slot {
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  padding-top: 8px;
+}
+
+.golden-button {
+  border: 1px solid #ffe57b;
+  border-radius: 13px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #ffe879, #d9a821);
+  color: #352600;
+  box-shadow: 0 8px 24px rgba(222, 174, 37, .18);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.golden-active {
+  color: #ffe879;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+.lineup-quick[hidden] { display: none; }
+.lineup-quick {
+  margin-top: 4px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(5, 21, 17, .58);
+}
+.lineup-quick-heading { display: grid; gap: 2px; margin-bottom: 10px; }
+.lineup-quick-heading strong { font-size: .78rem; }
+.lineup-quick-heading small { color: var(--muted); font-size: .65rem; }
+.lineup-quick .player-pool { margin-bottom: 4px; }
+.lineup-quick .helper { margin-bottom: 0; }
+
+.confirm-dialog[hidden],
+.golden-button[hidden],
+.golden-active[hidden] { display: none; }
+
+.confirm-dialog {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 8, 6, .78);
+  backdrop-filter: blur(8px);
+}
+
+.confirm-card {
+  width: min(100%, 390px);
+  padding: 22px;
+  border: 1px solid #806b27;
+  border-radius: 22px;
+  background: #0b241e;
+  box-shadow: var(--shadow);
+}
+
+.confirm-card h2 { margin: 4px 0 8px; font-size: 1.15rem; }
+.confirm-card > p:not(.eyebrow) { color: var(--muted); font-size: .82rem; }
+.confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+
+.history-divider {
+  justify-content: center !important;
+  border: 1px solid #557266;
+  background: transparent !important;
+  color: var(--lime) !important;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-align: center;
+}
+
+.daily-match { align-items: flex-start; }
+.daily-match-main { display: grid; gap: 4px; }
+.daily-match small { color: var(--muted); line-height: 1.4; }
+.daily-score { flex: 0 0 auto; color: var(--text) !important; font-weight: 900; }
+
+.report-button {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px;
+  background: #102e27;
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.report-button:disabled { cursor: default; opacity: .4; }
+
+/* Syöttöpuoli katsojan näkökulmasta: oikea ruutu näkyy kuvakkeen oikealla. */
+.mini-court i { left: 22px; }
+.serve[data-side="left"] .mini-court i { left: 6px; }
+
+@media (max-width: 370px) {
+  .team-score-card { min-height: 210px; }
+  .team-score-card .score-button { min-height: 146px; }
+  .lineup-player, .lineup-placeholder { min-height: 34px; font-size: .58rem; padding: 7px; }
+}
