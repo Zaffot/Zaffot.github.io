@@ -1,5 +1,5 @@
-const CACHE = 'padelpoints-v3';
-const ASSETS = ['./','index.html','styles.css','app.js','manifest.webmanifest','icon.svg'];
+const CACHE = 'padelpoints-v4';
+const ASSETS = ['./','index.html','styles.css','upgrades.css','app.js','manifest.webmanifest','icon.svg'];
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

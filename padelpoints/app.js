@@ -3,16 +3,24 @@
 
   const STORAGE_KEY = 'padelpoints-v1';
   const pointLabels = ['0', '15', '30', '40'];
-  const todayKey = () => new Date().toISOString().slice(0, 10);
+  const localDateKey = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   const initialState = () => ({
     points: [0, 0], games: [0, 0], sets: [0, 0], server: 0,
     teamNames: ['Tiimi A', 'Tiimi B'], pointHistory: [], undo: [],
     matches: [], mixed: false, players: [], lineups: [[], []], pickTeam: 0,
-    playerStats: {}, lineupLocked: false, unlockedTeam: null
+    playerStats: {}, lineupLocked: false, unlockedTeam: null,
+    goldenPoint: false, setResults: [], matchStartedAt: Date.now(), matchComplete: false,
+    message: 'Aloita ottelu lisäämällä ensimmäinen piste.'
   });
 
   let state = load();
   let deferredInstall = null;
+  let suppressScoreUntil = 0;
   const $ = (id) => document.getElementById(id);
   const els = {
     scoreA: $('scoreA'), scoreB: $('scoreB'), games: $('gamesScore'), sets: $('setsScore'),
@@ -21,13 +29,20 @@
     status: $('statusMessage'), undo: $('undoButton'), history: $('pointHistory'), pointCount: $('pointCount'),
     mixed: $('mixedMode'), mixedContent: $('mixedContent'), playerPool: $('playerPool'), playerStats: $('playerStats'),
     playersA: $('playersA'), playersB: $('playersB'), lineupHint: $('lineupHint'), daily: $('dailyMatches'),
-    todayCount: $('todayCount'), install: $('installButton')
+    todayCount: $('todayCount'), install: $('installButton'), goldenButton: $('goldenPointButton'),
+    goldenActive: $('goldenPointActive'), goldenDialog: $('goldenDialog'), goldenDialogText: $('goldenDialogText'),
+    confirmGolden: $('confirmGoldenButton'), cancelGolden: $('cancelGoldenButton'), printDaily: $('printDailyButton'),
+    lineupQuick: $('lineupQuickControls')
   };
 
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      return saved ? { ...initialState(), ...saved } : initialState();
+      const loaded = saved ? { ...initialState(), ...saved } : initialState();
+      loaded.setResults = Array.isArray(loaded.setResults) ? loaded.setResults : [];
+      loaded.pointHistory = Array.isArray(loaded.pointHistory) ? loaded.pointHistory : [];
+      loaded.matches = Array.isArray(loaded.matches) ? loaded.matches : [];
+      return loaded;
     } catch { return initialState(); }
   }
 
@@ -35,62 +50,121 @@
   function snapshot() {
     const { undo, ...rest } = state;
     state.undo.push(JSON.stringify(rest));
-    if (state.undo.length > 40) state.undo.shift();
+    if (state.undo.length > 60) state.undo.shift();
   }
   function teamIndex(key) { return key === 'a' ? 0 : 1; }
   function scoreText(index) {
+    if (state.goldenPoint) return '40';
     const own = state.points[index], other = state.points[1 - index];
     if (own >= 3 && other >= 3) return own > other ? 'AD' : '40';
     return pointLabels[Math.min(own, 3)];
   }
   function hasValidLineup() { return !state.mixed || (state.lineups[0].length === 2 && state.lineups[1].length === 2); }
+  function hasMatchProgress() { return state.points.some(Boolean) || state.games.some(Boolean) || state.sets.some(Boolean); }
+
+  function prepareNextMatch() {
+    state.pointHistory = [];
+    state.setResults = [];
+    state.matchStartedAt = Date.now();
+    state.matchComplete = false;
+    state.goldenPoint = false;
+    state.message = 'Uusi ottelu alkoi.';
+  }
 
   function addPoint(team) {
+    if (Date.now() < suppressScoreUntil) return;
     if (!hasValidLineup()) {
-      els.status.textContent = 'Valitse ensin kaksi pelaajaa kumpaankin tiimiin.';
+      state.message = 'Valitse ensin kaksi pelaajaa kumpaankin tiimiin.';
+      render();
       return;
     }
+    if (state.matchComplete) prepareNextMatch();
     snapshot();
     state.lineupLocked = state.mixed;
     state.unlockedTeam = null;
     const before = `${scoreText(0)}–${scoreText(1)}`;
+    const lineups = state.lineups.map(lineup => [...lineup]);
+    const goldenWasActive = state.goldenPoint;
     state.points[team] += 1;
-    let gameWon = false;
-    if (state.points[team] >= 4 && state.points[team] - state.points[1 - team] >= 2) {
-      gameWon = true;
-      finishGame(team);
+    const normalGameWin = state.points[team] >= 4 && state.points[team] - state.points[1 - team] >= 2;
+    const gameWon = goldenWasActive || normalGameWin;
+    if (state.mixed) recordPlayerPoint(team, lineups);
+
+    let outcome = { setWon: false, matchWon: false };
+    if (gameWon) outcome = finishGame(team);
+    const pointEvent = {
+      type: 'point', at: Date.now(), team, teamName: state.teamNames[team], before,
+      after: gameWon ? 'PELI' : `${scoreText(0)}–${scoreText(1)}`,
+      gameWon, golden: goldenWasActive, lineups
+    };
+    state.pointHistory.unshift(pointEvent);
+
+    if (outcome.setWon) {
+      state.pointHistory.unshift({
+        type: 'set', at: Date.now(), number: outcome.setNumber,
+        games: outcome.setGames, winner: team, teamName: state.teamNames[team]
+      });
     }
-    state.pointHistory.unshift({ at: Date.now(), team, before, after: gameWon ? 'Peli' : `${scoreText(0)}–${scoreText(1)}`, lineups: state.lineups.map(x => [...x]) });
-    if (state.pointHistory.length > 80) state.pointHistory.pop();
-    if (state.mixed) recordPlayerPoint(team);
-    els.status.textContent = gameWon ? `${state.teamNames[team]} voitti pelin.` : `${state.teamNames[team]} voitti pisteen.`;
+    while (state.pointHistory.length > 140) state.pointHistory.pop();
+
+    if (outcome.matchWon) {
+      finishMatch(team);
+    } else if (outcome.setWon) {
+      state.message = `${state.teamNames[team]} voitti ottelun erän ${outcome.setGames[0]}–${outcome.setGames[1]}.`;
+    } else if (gameWon) {
+      state.message = `${state.teamNames[team]} voitti pelin.`;
+    } else {
+      state.message = `${state.teamNames[team]} voitti pisteen.`;
+    }
     save(); render();
   }
 
   function finishGame(team) {
-    const loser = 1 - team;
     state.games[team] += 1;
     state.points = [0, 0];
+    state.goldenPoint = false;
     state.server = 1 - state.server;
-    if (state.mixed) { state.lineupLocked = false; state.unlockedTeam = loser; state.pickTeam = loser; }
-    const a = state.games[team], b = state.games[loser];
-    if ((a >= 6 && a - b >= 2) || a === 7) {
-      state.sets[team] += 1;
-      state.games = [0, 0];
-      if (state.sets[team] >= 2) finishMatch(team);
+    if (state.mixed) {
+      state.lineupLocked = false;
+      state.unlockedTeam = null;
+      state.pickTeam = 1 - team;
     }
+
+    const ownGames = state.games[team];
+    const otherGames = state.games[1 - team];
+    const setWon = (ownGames >= 6 && ownGames - otherGames >= 2) || ownGames === 7;
+    if (!setWon) return { setWon: false, matchWon: false };
+
+    const setGames = [...state.games];
+    state.sets[team] += 1;
+    const setNumber = state.setResults.length + 1;
+    state.setResults.push({ number: setNumber, winner: team, games: setGames });
+    state.games = [0, 0];
+    return { setWon: true, matchWon: state.sets[team] >= 2, setNumber, setGames };
   }
 
   function finishMatch(team) {
-    state.matches.unshift({ id: Date.now(), date: todayKey(), winner: team, teams: [...state.teamNames], sets: [...state.sets] });
+    const participants = [new Set(), new Set()];
+    state.pointHistory.forEach(event => {
+      if (!event.lineups) return;
+      event.lineups.forEach((lineup, index) => lineup.forEach(name => participants[index].add(name)));
+    });
+    state.matches.unshift({
+      id: Date.now(), date: localDateKey(), startedAt: state.matchStartedAt, endedAt: Date.now(),
+      winner: team, teams: [...state.teamNames], sets: [...state.sets],
+      setResults: state.setResults.map(result => ({ ...result, games: [...result.games] })),
+      participants: participants.map(teamPlayers => [...teamPlayers]),
+      events: state.pointHistory.map(event => ({ ...event }))
+    });
     state.matches = state.matches.slice(0, 100);
-    state.points = [0, 0]; state.games = [0, 0]; state.sets = [0, 0]; state.pointHistory = [];
+    state.points = [0, 0]; state.games = [0, 0]; state.sets = [0, 0];
+    state.setResults = []; state.goldenPoint = false; state.matchComplete = true;
     state.lineupLocked = false; state.unlockedTeam = null;
-    els.status.textContent = `${state.teamNames[team]} voitti ottelun!`;
+    state.message = `${state.teamNames[team]} voitti ottelun!`;
   }
 
-  function recordPlayerPoint(winner) {
-    state.lineups.forEach((lineup, team) => lineup.forEach(name => {
+  function recordPlayerPoint(winner, lineups) {
+    lineups.forEach((lineup, team) => lineup.forEach(name => {
       const stats = state.playerStats[name] || { won: 0, played: 0, partners: {} };
       stats.played += 1;
       if (team === winner) stats.won += 1;
@@ -109,63 +183,145 @@
     if (!previous) return;
     const remainingUndo = [...state.undo];
     state = { ...initialState(), ...JSON.parse(previous), undo: remainingUndo };
+    state.message = 'Viimeisin toiminto kumottiin.';
     save(); render();
-    els.status.textContent = 'Viimeisin piste kumottiin.';
   }
 
   function newMatch() {
-    if (!confirm('Aloitetaanko uusi ottelu? Nykyinen pistetilanne nollataan.')) return;
-    const keep = { matches: state.matches, mixed: state.mixed, players: state.players, lineups: state.lineups, playerStats: state.playerStats, teamNames: state.teamNames };
-    state = { ...initialState(), ...keep };
+    if (hasMatchProgress() && !confirm('Aloitetaanko uusi ottelu? Nykyinen pistetilanne nollataan.')) return;
+    const keep = {
+      matches: state.matches, mixed: state.mixed, players: state.players,
+      lineups: state.lineups, playerStats: state.playerStats, teamNames: state.teamNames
+    };
+    state = { ...initialState(), ...keep, message: 'Uusi ottelu on valmis alkamaan.' };
     save(); render();
   }
 
   function addPlayer(name) {
     const clean = name.trim();
-    if (!clean || state.players.some(p => p.toLowerCase() === clean.toLowerCase())) return;
+    if (!clean || state.players.some(player => player.toLowerCase() === clean.toLowerCase())) return;
     state.players.push(clean); save(); render();
   }
 
   function togglePlayer(name) {
-    const currentTeam = state.lineups.findIndex(lineup => lineup.includes(name));
     if (state.lineupLocked) return;
+    suppressScoreUntil = Date.now() + 400;
+    const currentTeam = state.lineups.findIndex(lineup => lineup.includes(name));
     if (currentTeam >= 0) {
-      if (state.unlockedTeam !== null && currentTeam !== state.unlockedTeam) return;
-      state.lineups[currentTeam] = state.lineups[currentTeam].filter(p => p !== name);
-    } else {
-      if (state.unlockedTeam !== null && state.pickTeam !== state.unlockedTeam) return;
-      if (state.lineups[state.pickTeam].length >= 2) return;
+      state.lineups[currentTeam] = state.lineups[currentTeam].filter(player => player !== name);
+    } else if (state.lineups[state.pickTeam].length < 2) {
       state.lineups[state.pickTeam].push(name);
     }
     save(); render();
   }
 
+  function openGoldenDialog() {
+    const advantageExists = scoreText(0) === 'AD' || scoreText(1) === 'AD';
+    els.goldenDialogText.textContent = advantageExists
+      ? 'Nykyinen etu poistetaan ja seuraava piste ratkaisee pelin. Oletko varma?'
+      : 'Seuraava piste ratkaisee pelin. Oletko varma?';
+    els.goldenDialog.hidden = false;
+    els.confirmGolden.focus();
+  }
+
+  function closeGoldenDialog() {
+    els.goldenDialog.hidden = true;
+    els.goldenButton.focus();
+  }
+
+  function activateGoldenPoint() {
+    snapshot();
+    state.points = [3, 3];
+    state.goldenPoint = true;
+    state.message = 'Kultainen piste aktivoitu – seuraava piste ratkaisee pelin.';
+    els.goldenDialog.hidden = true;
+    save(); render();
+  }
+
   function render() {
-    els.scoreA.textContent = scoreText(0); els.scoreB.textContent = scoreText(1);
-    els.games.textContent = `${state.games[0]}–${state.games[1]}`; els.sets.textContent = `${state.sets[0]}–${state.sets[1]}`;
+    const scoreA = scoreText(0), scoreB = scoreText(1);
+    els.scoreA.textContent = scoreA; els.scoreB.textContent = scoreB;
+    els.games.textContent = `${state.games[0]}–${state.games[1]}`;
+    els.sets.textContent = `${state.sets[0]}–${state.sets[1]}`;
     els.teamA.value = state.teamNames[0]; els.teamB.value = state.teamNames[1];
-    els.advantageA.hidden = els.scoreA.textContent !== 'AD'; els.advantageB.hidden = els.scoreB.textContent !== 'AD';
+    els.advantageA.classList.toggle('is-visible', scoreA === 'AD');
+    els.advantageB.classList.toggle('is-visible', scoreB === 'AD');
+
     const side = (state.points[0] + state.points[1]) % 2 === 0 ? 'right' : 'left';
-    [els.serveA, els.serveB].forEach((el, index) => { el.hidden = state.server !== index; el.dataset.side = side; });
-    [els.sideA, els.sideB].forEach(el => { el.textContent = side === 'right' ? 'OIKEALTA' : 'VASEMMALTA'; });
+    [els.serveA, els.serveB].forEach((element, index) => {
+      element.hidden = state.server !== index;
+      element.dataset.side = side;
+    });
+    [els.sideA, els.sideB].forEach(element => {
+      element.textContent = side === 'right' ? 'OIKEALTA' : 'VASEMMALTA';
+    });
+
+    const canOfferGolden = !state.goldenPoint && state.points[0] >= 3 && state.points[1] >= 3;
+    els.goldenButton.hidden = !canOfferGolden;
+    els.goldenActive.hidden = !state.goldenPoint;
+    els.status.textContent = state.message;
     els.undo.disabled = state.undo.length === 0;
-    els.pointCount.textContent = `${state.pointHistory.length} tapahtumaa`;
-    els.history.innerHTML = state.pointHistory.length ? state.pointHistory.slice(0, 30).map(item => `<li><span><strong>${escapeHtml(state.teamNames[item.team])}</strong> voitti pisteen</span><span>${escapeHtml(item.before)} → ${escapeHtml(item.after)}</span></li>`).join('') : '<li>Ei kirjattuja pisteitä.</li>';
-    els.mixed.checked = state.mixed; els.mixedContent.hidden = !state.mixed;
-    els.playersA.textContent = state.lineups[0].join(' · '); els.playersB.textContent = state.lineups[1].join(' · ');
+    renderHistory();
+    els.mixed.checked = state.mixed;
+    els.mixedContent.hidden = !state.mixed;
+    els.lineupQuick.hidden = !state.mixed;
     renderPlayers(); renderStats(); renderDaily();
   }
 
+  function renderHistory() {
+    const pointEvents = state.pointHistory.filter(event => !event.type || event.type === 'point').length;
+    els.pointCount.textContent = `${pointEvents} pistettä`;
+    if (!state.pointHistory.length) {
+      els.history.innerHTML = '<li>Ei kirjattuja pisteitä.</li>';
+      return;
+    }
+    els.history.innerHTML = state.pointHistory.slice(0, 60).map(event => {
+      if (event.type === 'set') {
+        return `<li class="history-divider">OTTELUN ERÄ ${event.number} · ${event.games[0]}–${event.games[1]}</li>`;
+      }
+      const teamName = event.teamName || state.teamNames[event.team];
+      const marker = event.golden ? ' · KULTAINEN' : '';
+      return `<li><span><strong>${escapeHtml(teamName)}</strong> voitti pisteen${marker}</span><span>${escapeHtml(event.before)} → ${escapeHtml(event.after)}</span></li>`;
+    }).join('');
+  }
+
+  function renderLineup(team) {
+    const lineup = state.lineups[team];
+    const buttons = lineup.map(name => `<button type="button" class="lineup-player" data-lineup-player="${escapeHtml(name)}" ${state.lineupLocked ? 'disabled' : ''}>${escapeHtml(name)}${state.lineupLocked ? '' : ' ×'}</button>`);
+    while (buttons.length < 2) buttons.push('<span class="lineup-placeholder">VAPAA PAIKKA</span>');
+    return buttons.join('');
+  }
+
   function renderPlayers() {
-    els.playerPool.innerHTML = state.players.length ? state.players.map(name => {
-      const team = state.lineups[0].includes(name) ? 'a' : state.lineups[1].includes(name) ? 'b' : '';
-      const locked = state.lineupLocked || (state.unlockedTeam !== null && team && teamIndex(team) !== state.unlockedTeam);
-      return `<button type="button" class="player-chip" data-player="${escapeHtml(name)}" data-team="${team}" ${locked ? 'disabled' : ''}>${escapeHtml(name)}</button>`;
-    }).join('') : '<p class="helper">Ei vielä pelaajia.</p>';
-    document.querySelectorAll('[data-pick-team]').forEach((button, index) => button.classList.toggle('active', state.pickTeam === index));
-    if (state.lineupLocked) els.lineupHint.textContent = 'Kokoonpano on lukittu tämän pelin ajaksi.';
-    else if (state.unlockedTeam !== null) els.lineupHint.textContent = `Peli päättyi – ${state.teamNames[state.unlockedTeam]} voidaan vaihtaa.`;
-    else els.lineupHint.textContent = `Valitse kaksi pelaajaa tiimiin ${state.pickTeam === 0 ? 'A' : 'B'}.`;
+    els.playersA.innerHTML = renderLineup(0);
+    els.playersB.innerHTML = renderLineup(1);
+    document.querySelectorAll('[data-lineup-player]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        togglePlayer(button.dataset.lineupPlayer);
+      });
+    });
+    const selected = new Set(state.lineups.flat());
+    const available = state.players.filter(name => !selected.has(name));
+    els.playerPool.innerHTML = available.length
+      ? available.map(name => `<button type="button" class="player-chip" data-player="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('')
+      : `<p class="helper">${state.players.length ? 'Kaikki pelaajat ovat tiimeissä.' : 'Ei vielä pelaajia.'}</p>`;
+    document.querySelectorAll('[data-pick-team]').forEach((button, index) => {
+      button.classList.toggle('active', state.pickTeam === index);
+      button.disabled = state.lineupLocked;
+    });
+    if (state.lineupLocked) {
+      els.lineupHint.textContent = 'Kokoonpano on lukittu tämän pelin ajaksi.';
+    } else if (state.matchComplete) {
+      els.lineupHint.textContent = 'Ottelu päättyi – voit vaihtaa pelaajia kummastakin tiimistä.';
+    } else if (hasMatchProgress()) {
+      els.lineupHint.textContent = 'Peli päättyi – voit vaihtaa pelaajia kummastakin tiimistä.';
+    } else if (hasValidLineup()) {
+      els.lineupHint.textContent = 'Valitse tiimi, jos haluat vaihtaa kokoonpanoa.';
+    } else {
+      els.lineupHint.textContent = `Valitse kaksi pelaajaa tiimiin ${state.pickTeam === 0 ? 'A' : 'B'}.`;
+    }
   }
 
   function renderStats() {
@@ -177,24 +333,97 @@
     }).join('') : '<p class="helper">Tilastot ilmestyvät, kun pisteitä on pelattu sekapelitilassa.</p>';
   }
 
-  function renderDaily() {
-    const today = state.matches.filter(match => match.date === todayKey());
-    els.todayCount.textContent = today.length;
-    els.daily.innerHTML = today.length ? today.map(match => `<div class="daily-match"><div><strong>${escapeHtml(match.teams[match.winner])}</strong> voitti</div><span>${match.sets[0]}–${match.sets[1]}</span></div>`).join('') : '<div class="empty-state">Tänään ei ole vielä päättyneitä otteluita.</div>';
+  function matchSetsText(match) {
+    const results = match.setResults || [];
+    return results.length ? results.map(result => `${result.games[0]}–${result.games[1]}`).join(', ') : `${match.sets?.[0] ?? 0}–${match.sets?.[1] ?? 0}`;
   }
 
-  function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[char])); }
+  function matchPlayersText(match) {
+    const participants = match.participants || [[], []];
+    const teamA = participants[0]?.length ? participants[0].join(', ') : 'ei pelaajatietoja';
+    const teamB = participants[1]?.length ? participants[1].join(', ') : 'ei pelaajatietoja';
+    return `${teamA} / ${teamB}`;
+  }
+
+  function renderDaily() {
+    const today = state.matches.filter(match => match.date === localDateKey());
+    els.todayCount.textContent = today.length;
+    els.printDaily.disabled = today.length === 0;
+    els.daily.innerHTML = today.length ? today.map(match => `
+      <div class="daily-match">
+        <div class="daily-match-main">
+          <strong>${escapeHtml(match.teams[match.winner])} voitti</strong>
+          <small>${escapeHtml(matchPlayersText(match))}</small>
+          <small>${formatClock(match.startedAt)}–${formatClock(match.endedAt)}</small>
+        </div>
+        <span class="daily-score">${escapeHtml(matchSetsText(match))}</span>
+      </div>`).join('') : '<div class="empty-state">Tänään ei ole vielä päättyneitä otteluita.</div>';
+  }
+
+  function printDailyReport() {
+    const today = state.matches.filter(match => match.date === localDateKey());
+    if (!today.length) return;
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      state.message = 'Raportti-ikkuna estettiin. Salli ponnahdusikkunat ja yritä uudelleen.';
+      render();
+      return;
+    }
+    const rows = today.map((match, index) => `
+      <section>
+        <h2>Ottelu ${index + 1}: ${escapeHtml(match.teams[0])} – ${escapeHtml(match.teams[1])}</h2>
+        <p><b>Voittaja:</b> ${escapeHtml(match.teams[match.winner])}</p>
+        <p><b>Pelaajat:</b> ${escapeHtml(matchPlayersText(match))}</p>
+        <p><b>Erät:</b> ${escapeHtml(matchSetsText(match))}</p>
+        <p><b>Aika:</b> ${formatClock(match.startedAt)}–${formatClock(match.endedAt)}</p>
+      </section>`).join('');
+    reportWindow.document.write(`<!doctype html><html lang="fi"><head><meta charset="utf-8"><title>PadelPoints ${localDateKey()}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:32px auto;color:#14251e}header{border-bottom:3px solid #14251e;margin-bottom:24px}h1{margin-bottom:4px}header p{margin-top:0;color:#557266}section{padding:16px 0;border-bottom:1px solid #ccd8d3}h2{font-size:18px}p{margin:6px 0}@media print{body{margin:12mm}button{display:none}}</style></head><body><header><h1>PadelPoints – päivän ottelut</h1><p>${localDateKey()} · ${today.length} ottelua</p></header>${rows}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),150));<\/script></body></html>`);
+    reportWindow.document.close();
+  }
+
+  function formatClock(timestamp) {
+    if (!timestamp) return '–';
+    return new Date(timestamp).toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[char]));
+  }
 
   document.querySelectorAll('[data-score-team]').forEach(button => button.addEventListener('click', () => addPoint(teamIndex(button.dataset.scoreTeam))));
-  [els.teamA, els.teamB].forEach((input, index) => input.addEventListener('change', () => { state.teamNames[index] = input.value.trim() || `Tiimi ${index ? 'B' : 'A'}`; save(); render(); }));
-  els.undo.addEventListener('click', undo); $('newMatchButton').addEventListener('click', newMatch);
-  document.querySelector('.panel-toggle').addEventListener('click', event => { const open = event.currentTarget.getAttribute('aria-expanded') === 'true'; event.currentTarget.setAttribute('aria-expanded', String(!open)); els.history.hidden = open; });
+  [els.teamA, els.teamB].forEach((input, index) => input.addEventListener('change', () => {
+    state.teamNames[index] = input.value.trim() || `Tiimi ${index ? 'B' : 'A'}`; save(); render();
+  }));
+  els.undo.addEventListener('click', undo);
+  $('newMatchButton').addEventListener('click', newMatch);
+  document.querySelector('.panel-toggle').addEventListener('click', event => {
+    const open = event.currentTarget.getAttribute('aria-expanded') === 'true';
+    event.currentTarget.setAttribute('aria-expanded', String(!open));
+    els.history.hidden = open;
+  });
   els.mixed.addEventListener('change', () => { state.mixed = els.mixed.checked; save(); render(); });
-  $('playerForm').addEventListener('submit', event => { event.preventDefault(); addPlayer($('playerName').value); $('playerName').value = ''; });
-  els.playerPool.addEventListener('click', event => { const button = event.target.closest('[data-player]'); if (button) togglePlayer(button.dataset.player); });
-  document.querySelectorAll('[data-pick-team]').forEach(button => button.addEventListener('click', () => { const team = teamIndex(button.dataset.pickTeam); if (state.unlockedTeam === null || state.unlockedTeam === team) { state.pickTeam = team; save(); render(); } }));
-  window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); deferredInstall = event; els.install.hidden = false; });
-  els.install.addEventListener('click', async () => { if (!deferredInstall) return; await deferredInstall.prompt(); deferredInstall = null; els.install.hidden = true; });
+  $('playerForm').addEventListener('submit', event => {
+    event.preventDefault(); addPlayer($('playerName').value); $('playerName').value = '';
+  });
+  els.playerPool.addEventListener('click', event => {
+    const button = event.target.closest('[data-player]'); if (button) togglePlayer(button.dataset.player);
+  });
+  document.querySelectorAll('[data-pick-team]').forEach(button => button.addEventListener('click', () => {
+    if (state.lineupLocked) return;
+    state.pickTeam = teamIndex(button.dataset.pickTeam); save(); render();
+  }));
+  els.goldenButton.addEventListener('click', openGoldenDialog);
+  els.cancelGolden.addEventListener('click', closeGoldenDialog);
+  els.confirmGolden.addEventListener('click', activateGoldenPoint);
+  els.goldenDialog.addEventListener('click', event => { if (event.target === els.goldenDialog) closeGoldenDialog(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !els.goldenDialog.hidden) closeGoldenDialog(); });
+  els.printDaily.addEventListener('click', printDailyReport);
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault(); deferredInstall = event; els.install.hidden = false;
+  });
+  els.install.addEventListener('click', async () => {
+    if (!deferredInstall) return; await deferredInstall.prompt(); deferredInstall = null; els.install.hidden = true;
+  });
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
   render();
 })();
