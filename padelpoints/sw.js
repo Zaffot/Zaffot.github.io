@@ -1,4 +1,4 @@
-const CACHE = 'padelpoints-v4';
+const CACHE = 'padelpoints-v5';
 const ASSETS = ['./','index.html','styles.css','upgrades.css','app.js','manifest.webmanifest','icon.svg'];
 self.addEventListener('install', event => {
   self.skipWaiting();

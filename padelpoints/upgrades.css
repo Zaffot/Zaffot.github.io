@@ -11,21 +11,6 @@
 .team-a .team-score-card:hover { border-color: var(--a); background: rgba(69, 216, 255, .07); }
 .team-b .team-score-card:hover { border-color: var(--b); background: rgba(255, 97, 120, .07); }
 
-.team-score-card .team-players {
-  position: relative;
-  z-index: 2;
-  min-height: 62px;
-  padding: 10px 7px 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 5px;
-  border-bottom: 1px solid rgba(39, 80, 68, .65);
-  overflow: visible;
-  white-space: normal;
-}
-
 .lineup-player,
 .lineup-placeholder {
   min-width: 0;
@@ -39,8 +24,8 @@
   line-height: 1;
 }
 
-.team-a .lineup-player { color: var(--a); }
-.team-b .lineup-player { color: var(--b); }
+[data-team-picker="a"] .lineup-player { color: var(--a); }
+[data-team-picker="b"] .lineup-player { color: var(--b); }
 .lineup-player:not(:disabled) { cursor: pointer; }
 .lineup-player:disabled { opacity: .82; }
 .lineup-placeholder { color: #68877d; border-style: dashed; }
@@ -48,7 +33,7 @@
 .team-score-card .score-button {
   position: relative;
   z-index: 1;
-  min-height: 160px;
+  min-height: 210px;
   margin: 0;
   border: 0;
   border-radius: 0;
@@ -110,6 +95,25 @@
 .lineup-quick-heading { display: grid; gap: 2px; margin-bottom: 10px; }
 .lineup-quick-heading strong { font-size: .78rem; }
 .lineup-quick-heading small { color: var(--muted); font-size: .65rem; }
+.pick-team-card {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(1, 10, 8, .35);
+}
+.pick-team-card .pick-team { width: 100%; }
+.picker-lineup {
+  min-height: 44px;
+  padding-top: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.picker-lineup .lineup-player,
+.picker-lineup .lineup-placeholder { flex: 1 1 92px; }
 .lineup-quick .player-pool { margin-bottom: 4px; }
 .lineup-quick .helper { margin-bottom: 0; }
 
@@ -176,6 +180,6 @@
 
 @media (max-width: 370px) {
   .team-score-card { min-height: 210px; }
-  .team-score-card .score-button { min-height: 146px; }
+  .team-score-card .score-button { min-height: 208px; }
   .lineup-player, .lineup-placeholder { min-height: 34px; font-size: .58rem; padding: 7px; }
 }
