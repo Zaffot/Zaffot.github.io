@@ -33,7 +33,11 @@
         <h2 id="scoreboardTitle">Käynnissä oleva ottelu</h2>
         <div class="set-score" aria-label="Ottelutilanne">
           <span>PELIT <b id="gamesScore">0–0</b></span>
-          <span>OTTELU <b id="setsScore">0–0</b></span>
+          <button id="matchTargetButton" class="match-target-button" type="button" aria-label="Muuta ottelun voittorajaa">
+            <span>OTTELU</span>
+            <b id="setsScore">0–0</b>
+            <small id="matchTargetLabel">2 voittoon</small>
+          </button>
         </div>
       </div>
 
@@ -119,7 +123,7 @@
         <label class="switch"><input id="mixedMode" type="checkbox"><span></span><em>Aktivoi</em></label>
       </div>
       <div id="mixedContent" hidden>
-        <p class="helper">Lisää päivän pelaajat. Kokoonpano pysyy lukittuna pelin ajan. Pelin päätyttyä kummankin tiimin pelaajia voidaan vaihtaa.</p>
+        <p class="helper">Lisää päivän pelaajat. Kokoonpano pysyy lukittuna pelin ajan. Pelin päätyttyä kummankin tiimin pelaajia voidaan vaihtaa. Paina pelaajan nimeä pitkään, jos haluat muokata tai poistaa pelaajan.</p>
         <form id="playerForm" class="player-form">
           <label for="playerName">Pelaajan nimi</label>
           <div><input id="playerName" maxlength="24" autocomplete="off" placeholder="Esim. Matti"><button type="submit">Lisää</button></div>
@@ -146,6 +150,49 @@
       <div class="confirm-actions">
         <button id="cancelGoldenButton" class="secondary-button" type="button">Ei</button>
         <button id="confirmGoldenButton" class="golden-button" type="button">OK, aktivoi</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="matchTargetDialog" class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="matchTargetDialogTitle" hidden>
+    <div class="confirm-card">
+      <p class="eyebrow">OTTELUN ASETUS</p>
+      <h2 id="matchTargetDialogTitle">Montako erävoittoa vaaditaan?</h2>
+      <p>Valitse 1–9 voittoa tai poista automaattinen päättyminen käytöstä.</p>
+      <label class="dialog-field" for="matchTargetInput">Voittoja otteluun
+        <input id="matchTargetInput" type="number" min="1" max="9" inputmode="numeric" value="2">
+      </label>
+      <label class="dialog-check"><input id="noMatchTarget" type="checkbox"> Ei automaattista päättymistä</label>
+      <div class="confirm-actions">
+        <button id="cancelMatchTargetButton" class="secondary-button" type="button">Peruuta</button>
+        <button id="saveMatchTargetButton" class="golden-button" type="button">Tallenna</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="playerDialog" class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="playerDialogTitle" hidden>
+    <div class="confirm-card">
+      <div id="playerEditorView">
+        <p class="eyebrow">PELAAJA</p>
+        <h2 id="playerDialogTitle">Muokkaa pelaajaa</h2>
+        <label class="dialog-field" for="editPlayerName">Pelaajan nimi
+          <input id="editPlayerName" maxlength="24" autocomplete="off">
+        </label>
+        <p id="playerDialogError" class="dialog-error" aria-live="polite"></p>
+        <div class="player-dialog-actions">
+          <button id="cancelPlayerButton" class="secondary-button" type="button">Peruuta</button>
+          <button id="deletePlayerButton" class="secondary-button danger" type="button">Poista</button>
+          <button id="savePlayerButton" class="golden-button" type="button">Tallenna nimi</button>
+        </div>
+      </div>
+      <div id="playerDeleteView" hidden>
+        <p class="eyebrow">VAHVISTUS</p>
+        <h2>Poistetaanko pelaaja?</h2>
+        <p id="playerDeleteText"></p>
+        <div class="confirm-actions">
+          <button id="cancelDeletePlayerButton" class="secondary-button" type="button">Ei</button>
+          <button id="confirmDeletePlayerButton" class="secondary-button danger" type="button">Kyllä, poista</button>
+        </div>
       </div>
     </div>
   </div>
