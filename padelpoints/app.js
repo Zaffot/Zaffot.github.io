@@ -15,12 +15,15 @@
     matches: [], mixed: false, players: [], lineups: [[], []], pickTeam: 0,
     playerStats: {}, lineupLocked: false, unlockedTeam: null,
     goldenPoint: false, setResults: [], matchStartedAt: Date.now(), matchComplete: false,
+    matchWinsRequired: 2, countedMatchIds: [],
     message: 'Aloita ottelu lisäämällä ensimmäinen piste.'
   });
 
   let state = load();
   let deferredInstall = null;
   let suppressScoreUntil = 0;
+  let suppressPlayerClickUntil = 0;
+  let managingPlayer = null;
   const $ = (id) => document.getElementById(id);
   const els = {
     scoreA: $('scoreA'), scoreB: $('scoreB'), games: $('gamesScore'), sets: $('setsScore'),
@@ -32,7 +35,14 @@
     todayCount: $('todayCount'), install: $('installButton'), goldenButton: $('goldenPointButton'),
     goldenActive: $('goldenPointActive'), goldenDialog: $('goldenDialog'), goldenDialogText: $('goldenDialogText'),
     confirmGolden: $('confirmGoldenButton'), cancelGolden: $('cancelGoldenButton'), printDaily: $('printDailyButton'),
-    lineupQuick: $('lineupQuickControls')
+    lineupQuick: $('lineupQuickControls'), matchTargetButton: $('matchTargetButton'),
+    matchTargetLabel: $('matchTargetLabel'), matchTargetDialog: $('matchTargetDialog'),
+    matchTargetInput: $('matchTargetInput'), noMatchTarget: $('noMatchTarget'),
+    saveMatchTarget: $('saveMatchTargetButton'), cancelMatchTarget: $('cancelMatchTargetButton'),
+    playerDialog: $('playerDialog'), playerEditorView: $('playerEditorView'), playerDeleteView: $('playerDeleteView'),
+    editPlayerName: $('editPlayerName'), playerDialogError: $('playerDialogError'), playerDeleteText: $('playerDeleteText'),
+    savePlayer: $('savePlayerButton'), cancelPlayer: $('cancelPlayerButton'), deletePlayer: $('deletePlayerButton'),
+    cancelDeletePlayer: $('cancelDeletePlayerButton'), confirmDeletePlayer: $('confirmDeletePlayerButton')
   };
 
   function load() {
@@ -42,6 +52,29 @@
       loaded.setResults = Array.isArray(loaded.setResults) ? loaded.setResults : [];
       loaded.pointHistory = Array.isArray(loaded.pointHistory) ? loaded.pointHistory : [];
       loaded.matches = Array.isArray(loaded.matches) ? loaded.matches : [];
+      loaded.countedMatchIds = Array.isArray(loaded.countedMatchIds) ? loaded.countedMatchIds : [];
+      loaded.matchWinsRequired = Number.isInteger(loaded.matchWinsRequired) && loaded.matchWinsRequired >= 0
+        ? Math.min(loaded.matchWinsRequired, 9) : 2;
+      loaded.players.forEach(name => {
+        const stats = loaded.playerStats[name] || {};
+        loaded.playerStats[name] = {
+          won: stats.won || 0, played: stats.played || 0, partners: stats.partners || {},
+          matchWins: stats.matchWins || 0, matchesPlayed: stats.matchesPlayed || 0
+        };
+      });
+      loaded.matches.forEach(match => {
+        if (loaded.countedMatchIds.includes(match.id)) return;
+        const participants = Array.isArray(match.participants) ? match.participants : [[], []];
+        const allPlayers = new Set([...(participants[0] || []), ...(participants[1] || [])]);
+        allPlayers.forEach(name => {
+          if (!loaded.players.includes(name)) return;
+          const stats = loaded.playerStats[name] || { won: 0, played: 0, partners: {}, matchWins: 0, matchesPlayed: 0 };
+          stats.matchesPlayed = (stats.matchesPlayed || 0) + 1;
+          if ((participants[match.winner] || []).includes(name)) stats.matchWins = (stats.matchWins || 0) + 1;
+          loaded.playerStats[name] = stats;
+        });
+        loaded.countedMatchIds.push(match.id);
+      });
       return loaded;
     } catch { return initialState(); }
   }
@@ -140,7 +173,9 @@
     const setNumber = state.setResults.length + 1;
     state.setResults.push({ number: setNumber, winner: team, games: setGames });
     state.games = [0, 0];
-    return { setWon: true, matchWon: state.sets[team] >= 2, setNumber, setGames };
+    const required = state.matchWinsRequired;
+    const matchWon = required > 0 && state.sets[team] >= required && state.sets[team] > state.sets[1 - team];
+    return { setWon: true, matchWon, setNumber, setGames };
   }
 
   function finishMatch(team) {
@@ -149,13 +184,15 @@
       if (!event.lineups) return;
       event.lineups.forEach((lineup, index) => lineup.forEach(name => participants[index].add(name)));
     });
-    state.matches.unshift({
+    const completedMatch = {
       id: Date.now(), date: localDateKey(), startedAt: state.matchStartedAt, endedAt: Date.now(),
       winner: team, teams: [...state.teamNames], sets: [...state.sets],
       setResults: state.setResults.map(result => ({ ...result, games: [...result.games] })),
       participants: participants.map(teamPlayers => [...teamPlayers]),
       events: state.pointHistory.map(event => ({ ...event }))
-    });
+    };
+    state.matches.unshift(completedMatch);
+    if (state.mixed) recordStoredMatchResult(completedMatch);
     state.matches = state.matches.slice(0, 100);
     state.points = [0, 0]; state.games = [0, 0]; state.sets = [0, 0];
     state.setResults = []; state.goldenPoint = false; state.matchComplete = true;
@@ -165,7 +202,7 @@
 
   function recordPlayerPoint(winner, lineups) {
     lineups.forEach((lineup, team) => lineup.forEach(name => {
-      const stats = state.playerStats[name] || { won: 0, played: 0, partners: {} };
+      const stats = state.playerStats[name] || { won: 0, played: 0, partners: {}, matchWins: 0, matchesPlayed: 0 };
       stats.played += 1;
       if (team === winner) stats.won += 1;
       const partner = lineup.find(player => player !== name);
@@ -176,6 +213,19 @@
       }
       state.playerStats[name] = stats;
     }));
+  }
+
+  function recordStoredMatchResult(match) {
+    if (state.countedMatchIds.includes(match.id)) return;
+    const participants = match.participants || [[], []];
+    const allPlayers = new Set([...(participants[0] || []), ...(participants[1] || [])]);
+    allPlayers.forEach(name => {
+      const stats = state.playerStats[name] || { won: 0, played: 0, partners: {}, matchWins: 0, matchesPlayed: 0 };
+      stats.matchesPlayed = (stats.matchesPlayed || 0) + 1;
+      if ((participants[match.winner] || []).includes(name)) stats.matchWins = (stats.matchWins || 0) + 1;
+      state.playerStats[name] = stats;
+    });
+    state.countedMatchIds.push(match.id);
   }
 
   function undo() {
@@ -191,7 +241,8 @@
     if (hasMatchProgress() && !confirm('Aloitetaanko uusi ottelu? Nykyinen pistetilanne nollataan.')) return;
     const keep = {
       matches: state.matches, mixed: state.mixed, players: state.players,
-      lineups: state.lineups, playerStats: state.playerStats, teamNames: state.teamNames
+      lineups: state.lineups, playerStats: state.playerStats, teamNames: state.teamNames,
+      matchWinsRequired: state.matchWinsRequired, countedMatchIds: state.countedMatchIds
     };
     state = { ...initialState(), ...keep, message: 'Uusi ottelu on valmis alkamaan.' };
     save(); render();
@@ -204,6 +255,7 @@
   }
 
   function togglePlayer(name) {
+    if (Date.now() < suppressPlayerClickUntil) return;
     if (state.lineupLocked) return;
     suppressScoreUntil = Date.now() + 400;
     const currentTeam = state.lineups.findIndex(lineup => lineup.includes(name));
@@ -213,6 +265,132 @@
       state.lineups[state.pickTeam].push(name);
     }
     save(); render();
+  }
+
+  function openMatchTargetDialog() {
+    const hasTarget = state.matchWinsRequired > 0;
+    els.matchTargetInput.value = hasTarget ? state.matchWinsRequired : 2;
+    els.noMatchTarget.checked = !hasTarget;
+    els.matchTargetInput.disabled = !hasTarget;
+    els.matchTargetDialog.hidden = false;
+    (hasTarget ? els.matchTargetInput : els.noMatchTarget).focus();
+  }
+
+  function closeMatchTargetDialog() {
+    els.matchTargetDialog.hidden = true;
+    els.matchTargetButton.focus();
+  }
+
+  function saveMatchTarget() {
+    const required = els.noMatchTarget.checked ? 0 : Math.max(1, Math.min(9, Number.parseInt(els.matchTargetInput.value, 10) || 1));
+    state.matchWinsRequired = required;
+    state.message = required
+      ? `Ottelu päättyy, kun tiimi saavuttaa ${required} erävoittoa.`
+      : 'Automaattinen ottelun päättyminen on pois käytöstä.';
+    els.matchTargetDialog.hidden = true;
+
+    if (required > 0 && state.sets[0] !== state.sets[1]) {
+      const leader = state.sets[0] > state.sets[1] ? 0 : 1;
+      if (state.sets[leader] >= required) finishMatch(leader);
+    }
+    save(); render();
+  }
+
+  function ensurePlayerStats(name) {
+    state.playerStats[name] ||= { won: 0, played: 0, partners: {}, matchWins: 0, matchesPlayed: 0 };
+    state.playerStats[name].matchWins ||= 0;
+    state.playerStats[name].matchesPlayed ||= 0;
+    state.playerStats[name].partners ||= {};
+    return state.playerStats[name];
+  }
+
+  function openPlayerDialog(name) {
+    if (!state.players.includes(name)) return;
+    managingPlayer = name;
+    els.playerEditorView.hidden = false;
+    els.playerDeleteView.hidden = true;
+    els.editPlayerName.value = name;
+    els.playerDialogError.textContent = '';
+    els.playerDialog.hidden = false;
+    els.editPlayerName.focus();
+    els.editPlayerName.select();
+  }
+
+  function closePlayerDialog() {
+    els.playerDialog.hidden = true;
+    managingPlayer = null;
+  }
+
+  function renamePlayer() {
+    if (!managingPlayer) return;
+    const oldName = managingPlayer;
+    const newName = els.editPlayerName.value.trim();
+    if (!newName) {
+      els.playerDialogError.textContent = 'Nimi ei voi olla tyhjä.';
+      return;
+    }
+    if (state.players.some(name => name !== oldName && name.toLowerCase() === newName.toLowerCase())) {
+      els.playerDialogError.textContent = 'Samanniminen pelaaja on jo lisätty.';
+      return;
+    }
+    if (newName !== oldName) {
+      state.players = state.players.map(name => name === oldName ? newName : name);
+      state.lineups = state.lineups.map(lineup => lineup.map(name => name === oldName ? newName : name));
+      const stats = ensurePlayerStats(oldName);
+      delete state.playerStats[oldName];
+      state.playerStats[newName] = stats;
+      Object.values(state.playerStats).forEach(playerStats => {
+        if (!playerStats.partners?.[oldName]) return;
+        playerStats.partners[newName] = playerStats.partners[oldName];
+        delete playerStats.partners[oldName];
+      });
+      state.pointHistory.forEach(event => {
+        if (event.lineups) event.lineups = event.lineups.map(lineup => lineup.map(name => name === oldName ? newName : name));
+      });
+    }
+    state.message = `${newName} tallennettiin.`;
+    closePlayerDialog(); save(); render();
+  }
+
+  function showDeletePlayerConfirmation() {
+    if (!managingPlayer) return;
+    els.playerEditorView.hidden = true;
+    els.playerDeleteView.hidden = false;
+    els.playerDeleteText.textContent = `${managingPlayer} poistetaan pelaajalistasta ja pelaajatilastoista. Valmiiden otteluiden historia säilyy.`;
+    els.cancelDeletePlayer.focus();
+  }
+
+  function deletePlayer() {
+    if (!managingPlayer) return;
+    const name = managingPlayer;
+    state.players = state.players.filter(player => player !== name);
+    state.lineups = state.lineups.map(lineup => lineup.filter(player => player !== name));
+    delete state.playerStats[name];
+    Object.values(state.playerStats).forEach(stats => { if (stats.partners) delete stats.partners[name]; });
+    state.pointHistory.forEach(event => {
+      if (event.lineups) event.lineups = event.lineups.map(lineup => lineup.filter(player => player !== name));
+    });
+    state.message = `${name} poistettiin.`;
+    closePlayerDialog(); save(); render();
+  }
+
+  function addPlayerHoldGesture(element, name) {
+    let holdTimer = null;
+    const cancelHold = () => { if (holdTimer) clearTimeout(holdTimer); holdTimer = null; };
+    element.addEventListener('pointerdown', () => {
+      cancelHold();
+      holdTimer = setTimeout(() => {
+        suppressPlayerClickUntil = Date.now() + 700;
+        openPlayerDialog(name);
+        holdTimer = null;
+      }, 650);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => element.addEventListener(type, cancelHold));
+    element.addEventListener('contextmenu', event => {
+      event.preventDefault();
+      suppressPlayerClickUntil = Date.now() + 700;
+      openPlayerDialog(name);
+    });
   }
 
   function openGoldenDialog() {
@@ -243,6 +421,8 @@
     els.scoreA.textContent = scoreA; els.scoreB.textContent = scoreB;
     els.games.textContent = `${state.games[0]}–${state.games[1]}`;
     els.sets.textContent = `${state.sets[0]}–${state.sets[1]}`;
+    els.matchTargetLabel.textContent = state.matchWinsRequired ? `${state.matchWinsRequired} voittoon` : 'ei rajaa';
+    els.matchTargetButton.setAttribute('aria-label', `Muuta ottelun voittorajaa. Nykyinen asetus: ${els.matchTargetLabel.textContent}`);
     els.teamA.value = state.teamNames[0]; els.teamB.value = state.teamNames[1];
     els.advantageA.classList.toggle('is-visible', scoreA === 'AD');
     els.advantageB.classList.toggle('is-visible', scoreB === 'AD');
@@ -296,6 +476,7 @@
     els.playersA.innerHTML = renderLineup(0);
     els.playersB.innerHTML = renderLineup(1);
     document.querySelectorAll('[data-lineup-player]').forEach(button => {
+      addPlayerHoldGesture(button, button.dataset.lineupPlayer);
       button.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
@@ -307,6 +488,7 @@
     els.playerPool.innerHTML = available.length
       ? available.map(name => `<button type="button" class="player-chip" data-player="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('')
       : `<p class="helper">${state.players.length ? 'Kaikki pelaajat ovat tiimeissä.' : 'Ei vielä pelaajia.'}</p>`;
+    document.querySelectorAll('[data-player]').forEach(button => addPlayerHoldGesture(button, button.dataset.player));
     document.querySelectorAll('[data-pick-team]').forEach((button, index) => {
       button.classList.toggle('active', state.pickTeam === index);
       button.disabled = state.lineupLocked;
@@ -325,12 +507,22 @@
   }
 
   function renderStats() {
-    const rows = Object.entries(state.playerStats).sort((a, b) => b[1].played - a[1].played);
+    const rows = state.players.map(name => [name, ensurePlayerStats(name)])
+      .sort((a, b) => (b[1].matchWins - a[1].matchWins) || (b[1].played - a[1].played) || a[0].localeCompare(b[0], 'fi'));
     els.playerStats.innerHTML = rows.length ? rows.map(([name, stats]) => {
       const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
       const partners = Object.entries(stats.partners || {}).sort((a, b) => (b[1].won / b[1].played) - (a[1].won / a[1].played));
-      return `<div class="stat-row"><strong>${escapeHtml(name)}</strong><span>${stats.won}/${stats.played} pistettä</span><b>${pct}%</b>${partners[0] ? `<span style="grid-column:1/-1">Paras pari: ${escapeHtml(partners[0][0])}</span>` : ''}</div>`;
-    }).join('') : '<p class="helper">Tilastot ilmestyvät, kun pisteitä on pelattu sekapelitilassa.</p>';
+      return `<div class="stat-row">
+        <strong>${escapeHtml(name)}</strong>
+        <span>${stats.matchWins || 0} ${(stats.matchWins || 0) === 1 ? 'otteluvoitto' : 'otteluvoittoa'}</span>
+        <button type="button" class="player-manage-button" data-manage-player="${escapeHtml(name)}" aria-label="Muokkaa pelaajaa ${escapeHtml(name)}">•••</button>
+        <span>${stats.won}/${stats.played} pistettä · ${pct}%</span>
+        ${partners[0] ? `<span>Paras pari: ${escapeHtml(partners[0][0])}</span>` : '<span>Ei vielä paritilastoa</span>'}
+      </div>`;
+    }).join('') : '<p class="helper">Lisää pelaaja nähdäksesi pelaajatilastot.</p>';
+    document.querySelectorAll('[data-manage-player]').forEach(button => {
+      button.addEventListener('click', () => openPlayerDialog(button.dataset.managePlayer));
+    });
   }
 
   function matchSetsText(match) {
@@ -416,7 +608,26 @@
   els.cancelGolden.addEventListener('click', closeGoldenDialog);
   els.confirmGolden.addEventListener('click', activateGoldenPoint);
   els.goldenDialog.addEventListener('click', event => { if (event.target === els.goldenDialog) closeGoldenDialog(); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !els.goldenDialog.hidden) closeGoldenDialog(); });
+  els.matchTargetButton.addEventListener('click', openMatchTargetDialog);
+  els.cancelMatchTarget.addEventListener('click', closeMatchTargetDialog);
+  els.saveMatchTarget.addEventListener('click', saveMatchTarget);
+  els.noMatchTarget.addEventListener('change', () => { els.matchTargetInput.disabled = els.noMatchTarget.checked; });
+  els.matchTargetDialog.addEventListener('click', event => { if (event.target === els.matchTargetDialog) closeMatchTargetDialog(); });
+  els.cancelPlayer.addEventListener('click', closePlayerDialog);
+  els.savePlayer.addEventListener('click', renamePlayer);
+  els.deletePlayer.addEventListener('click', showDeletePlayerConfirmation);
+  els.cancelDeletePlayer.addEventListener('click', () => {
+    els.playerDeleteView.hidden = true; els.playerEditorView.hidden = false; els.deletePlayer.focus();
+  });
+  els.confirmDeletePlayer.addEventListener('click', deletePlayer);
+  els.playerDialog.addEventListener('click', event => { if (event.target === els.playerDialog) closePlayerDialog(); });
+  els.editPlayerName.addEventListener('keydown', event => { if (event.key === 'Enter') renamePlayer(); });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (!els.goldenDialog.hidden) closeGoldenDialog();
+    else if (!els.matchTargetDialog.hidden) closeMatchTargetDialog();
+    else if (!els.playerDialog.hidden) closePlayerDialog();
+  });
   els.printDaily.addEventListener('click', printDailyReport);
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault(); deferredInstall = event; els.install.hidden = false;
