@@ -239,6 +239,23 @@
 .mini-court i { left: 22px; }
 .serve[data-side="left"] .mini-court i { left: 6px; }
 
+.serve-switch {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 5px 9px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.serve-switch:hover,
+.serve-switch:focus-visible {
+  border-color: var(--lime);
+  background: rgba(209, 255, 90, .06);
+  outline: none;
+}
+.serve-switch:active { transform: scale(.97); }
+.serve-switch small { white-space: nowrap; }
+
 @media (max-width: 370px) {
   .team-score-card { min-height: 210px; }
   .team-score-card .score-button { min-height: 208px; }

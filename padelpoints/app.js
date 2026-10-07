@@ -178,6 +178,13 @@
     return { setWon: true, matchWon, setNumber, setGames };
   }
 
+  function changeServer() {
+    snapshot();
+    state.server = 1 - state.server;
+    state.message = `Syöttövuoro vaihdettiin: ${state.teamNames[state.server]}.`;
+    save(); render();
+  }
+
   function finishMatch(team) {
     const participants = [new Set(), new Set()];
     state.pointHistory.forEach(event => {
@@ -431,6 +438,7 @@
     [els.serveA, els.serveB].forEach((element, index) => {
       element.hidden = state.server !== index;
       element.dataset.side = side;
+      element.setAttribute('aria-label', `Vaihda syöttövuoro joukkueelta ${state.teamNames[index]} joukkueelle ${state.teamNames[1 - index]}`);
     });
     [els.sideA, els.sideB].forEach(element => {
       element.textContent = side === 'right' ? 'OIKEALTA' : 'VASEMMALTA';
@@ -583,6 +591,7 @@
   }
 
   document.querySelectorAll('[data-score-team]').forEach(button => button.addEventListener('click', () => addPoint(teamIndex(button.dataset.scoreTeam))));
+  [els.serveA, els.serveB].forEach(button => button.addEventListener('click', changeServer));
   [els.teamA, els.teamB].forEach((input, index) => input.addEventListener('change', () => {
     state.teamNames[index] = input.value.trim() || `Tiimi ${index ? 'B' : 'A'}`; save(); render();
   }));
