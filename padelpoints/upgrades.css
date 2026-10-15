@@ -172,6 +172,7 @@
 .confirm-card h2 { margin: 4px 0 8px; font-size: 1.15rem; }
 .confirm-card > p:not(.eyebrow) { color: var(--muted); font-size: .82rem; }
 .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+.confirm-primary { background: var(--lime); border-color: var(--lime); color: #11271f; }
 .dialog-field { display: grid; gap: 6px; margin-top: 16px; color: var(--muted); font-size: .72rem; }
 .dialog-field input {
   width: 100%;
