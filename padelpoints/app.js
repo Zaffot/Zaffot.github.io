@@ -35,7 +35,8 @@
     todayCount: $('todayCount'), install: $('installButton'), goldenButton: $('goldenPointButton'),
     goldenActive: $('goldenPointActive'), goldenDialog: $('goldenDialog'), goldenDialogText: $('goldenDialogText'),
     confirmGolden: $('confirmGoldenButton'), cancelGolden: $('cancelGoldenButton'), printDaily: $('printDailyButton'),
-    lineupQuick: $('lineupQuickControls'), matchTargetButton: $('matchTargetButton'),
+    lineupQuick: $('lineupQuickControls'), serveDialog: $('serveDialog'), serveDialogText: $('serveDialogText'),
+    confirmServe: $('confirmServeButton'), cancelServe: $('cancelServeButton'), matchTargetButton: $('matchTargetButton'),
     matchTargetLabel: $('matchTargetLabel'), matchTargetDialog: $('matchTargetDialog'),
     matchTargetInput: $('matchTargetInput'), noMatchTarget: $('noMatchTarget'),
     saveMatchTarget: $('saveMatchTargetButton'), cancelMatchTarget: $('cancelMatchTargetButton'),
@@ -183,6 +184,22 @@
     state.server = 1 - state.server;
     state.message = `Syöttövuoro vaihdettiin: ${state.teamNames[state.server]}.`;
     save(); render();
+  }
+
+  function openServeDialog() {
+    els.serveDialogText.textContent = `Syöttö siirtyy joukkueelta ${state.teamNames[state.server]} joukkueelle ${state.teamNames[1 - state.server]}. Haluatko varmasti jatkaa?`;
+    els.serveDialog.hidden = false;
+    els.confirmServe.focus();
+  }
+
+  function closeServeDialog() {
+    els.serveDialog.hidden = true;
+    (state.server === 0 ? els.serveA : els.serveB).focus();
+  }
+
+  function confirmServerChange() {
+    els.serveDialog.hidden = true;
+    changeServer();
   }
 
   function finishMatch(team) {
@@ -591,7 +608,7 @@
   }
 
   document.querySelectorAll('[data-score-team]').forEach(button => button.addEventListener('click', () => addPoint(teamIndex(button.dataset.scoreTeam))));
-  [els.serveA, els.serveB].forEach(button => button.addEventListener('click', changeServer));
+  [els.serveA, els.serveB].forEach(button => button.addEventListener('click', openServeDialog));
   [els.teamA, els.teamB].forEach((input, index) => input.addEventListener('change', () => {
     state.teamNames[index] = input.value.trim() || `Tiimi ${index ? 'B' : 'A'}`; save(); render();
   }));
@@ -617,6 +634,9 @@
   els.cancelGolden.addEventListener('click', closeGoldenDialog);
   els.confirmGolden.addEventListener('click', activateGoldenPoint);
   els.goldenDialog.addEventListener('click', event => { if (event.target === els.goldenDialog) closeGoldenDialog(); });
+  els.cancelServe.addEventListener('click', closeServeDialog);
+  els.confirmServe.addEventListener('click', confirmServerChange);
+  els.serveDialog.addEventListener('click', event => { if (event.target === els.serveDialog) closeServeDialog(); });
   els.matchTargetButton.addEventListener('click', openMatchTargetDialog);
   els.cancelMatchTarget.addEventListener('click', closeMatchTargetDialog);
   els.saveMatchTarget.addEventListener('click', saveMatchTarget);
@@ -634,6 +654,7 @@
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     if (!els.goldenDialog.hidden) closeGoldenDialog();
+    else if (!els.serveDialog.hidden) closeServeDialog();
     else if (!els.matchTargetDialog.hidden) closeMatchTargetDialog();
     else if (!els.playerDialog.hidden) closePlayerDialog();
   });
